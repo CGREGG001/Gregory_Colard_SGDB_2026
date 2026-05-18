@@ -1,0 +1,108 @@
+## --- .NET / C# ---
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.rsuser
+*.suo
+*.cache
+*.pdb
+*.mdb
+*.db
+*.jfm
+
+# ASP.NET temp (au cas où)
+App_Data/
+App_Data/*
+
+# Fichiers générés
+*.g.cs
+*.g.i.cs
+*.designer.cs
+*.Generated.cs
+
+## --- WPF ---
+# Fichiers générés par XAML
+*.baml
+*.xaml.cs
+
+# Ressources compilées
+*.g.resources
+*.resources
+
+## --- Environment / Secrets ---
+.env
+.env.*
+*.env
+*.env.local
+*.env.development
+*.env.production
+*.env.test
+
+## --- Visual Studio ---
+.vs/
+*.vcxproj.user
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+
+# Extensions VS
+*.vsp
+*.vspscc
+*.vssscc
+
+## --- Rider / IntelliJ ---
+.idea/
+*.sln.iml
+
+## --- VS Code ---
+.vscode/
+.history/
+
+## --- NuGet ---
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+
+## --- Logs / Temp ---
+*.log
+*.tlog
+*.tmp
+*.temp
+
+## --- OS spécifiques ---
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.cache/
+.Trash-*/
+
+## --- Autres ---
+# JetBrains caches
+.idea/
+*.iml
+
+# Fichiers de tests
+TestResult*/
+*.coverage
+*.coveragexml
+
+# Publish
+publish/

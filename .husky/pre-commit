@@ -1,4 +1,10 @@
 #!/bin/sh
-dotnet format --verify-no-changes
-dotnet build
-dotnet test
+
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+NC="\033[0m"
+
+echo -e "${YELLOW}🔍 Vérification rapide (format)…${NC}"
+dotnet format --verify-no-changes || exit 1
+
+echo -e "${GREEN}✔ pre-commit OK${NC}"

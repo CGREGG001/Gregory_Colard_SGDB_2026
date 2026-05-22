@@ -10,8 +10,30 @@ public class DbConnectionFactory
 
     public DbConnectionFactory(IEnumMapper enumMapper)
     {
-        // Chargement du fichier .env pour les variables de la DB (se trouve dans ./docker/.env).
-        DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { "../../docker/.env" }));
+        // Recherche récursive du fichier .env pour être multi-plateforme et flexible
+        var currentDir = Directory.GetCurrentDirectory();
+        string envPath = "";
+
+        // On remonte jusqu'à 5 niveaux pour trouver le dossier docker/.env
+        for (int i = 0; i < 5; i++)
+        {
+            var potentialPath = Path.Combine(currentDir, "docker", ".env");
+            if (File.Exists(potentialPath))
+            {
+                envPath = potentialPath;
+                break;
+            }
+            currentDir = Directory.GetParent(currentDir)?.FullName ?? currentDir;
+        }
+
+        if (string.IsNullOrEmpty(envPath))
+        {
+            // Si non trouvé dans docker/, on cherche à la racine du projet
+            envPath = ".env";
+        }
+
+        // Chargement du fichier .env pour les variables de la DB
+        DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { envPath }));
 
         var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "Localhost";
         var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";

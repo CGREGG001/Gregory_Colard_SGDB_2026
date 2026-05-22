@@ -2,7 +2,7 @@ using AnimalShelter.Core.Enums;
 
 namespace AnimalShelter.Core.Models
 {
-    public class Compatibility
+    public class Compatibility : BaseEntity<Guid>
     {
         public string AnimalId { get; set; } = string.Empty;
         public CompatibilityTypeEnum TargetType { get; set; }

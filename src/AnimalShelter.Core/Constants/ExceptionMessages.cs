@@ -13,11 +13,13 @@ public static class ExceptionMessages
     public const string DeathInFuture = "The death date cannot be in the future.";
     public const string SterilizationBeforeBirth = "The sterilization date cannot be before the birth date.";
     public const string DeathBeforeBirth = "The death date cannot be before the birth date.";
+    public const string InvalidDateRegression = "The provided dates are inconsistent with the existing record.";
 
     // État et existence
     public const string AnimalNotFound = "The specified animal was not found.";
     public const string AnimalAlreadyExists = "An animal with the same characteristics already exists in the system.";
     public const string CannotUpdateDeadAnimal = "Cannot update an animal that is already marked as deceased.";
+    public const string CannotModifyDeadAnimal = "A deceased animal cannot be modified.";
 
     // Technique
     public const string DatabaseError = "A technical error occurred with the database.";

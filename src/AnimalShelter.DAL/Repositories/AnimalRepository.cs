@@ -1,6 +1,8 @@
 using AnimalShelter.Core.Interfaces;
 using AnimalShelter.Core.Models;
 using AnimalShelter.DAL.Infrastructure;
+using AnimalShelter.DAL.Mappers;
+using AnimalShelter.DAL.Queries;
 
 namespace AnimalShelter.DAL.Repositories;
 
@@ -13,27 +15,85 @@ public class AnimalRepository : IAnimalRepository
         _connectionFactory = connectionFactory;
     }
 
-    public Task<string> AddAsync(Animal animal)
+    public async Task<string> AddAsync(Animal animal)
     {
-        throw new NotImplementedException();
+        const string query = AnimalQueries.Insert;
+
+        var result = await DbHelper.ExecuteScalarAsync(
+            _connectionFactory,
+            query,
+            cmd =>
+            {
+                cmd.Parameters.AddWithValue("name", animal.Name);
+                cmd.Parameters.AddWithValue("species", animal.Species);
+                cmd.Parameters.AddWithValue("sex", animal.Sex);
+                cmd.Parameters.AddWithValue("colors", DbHelper.DbValue(animal.Colors));
+                cmd.Parameters.AddWithValue("is_sterilised", animal.IsSterilised);
+                cmd.Parameters.AddWithValue("sterilisation_date", DbHelper.DbValue(animal.SterilisationDate));
+                cmd.Parameters.AddWithValue("birth_date", DbHelper.DbValue(animal.BirthDate));
+                cmd.Parameters.AddWithValue("description", DbHelper.DbValue(animal.Description));
+                cmd.Parameters.AddWithValue("particularities", DbHelper.DbValue(animal.Particularities));
+            }
+        );
+
+        return result?.ToString() ?? throw new Exception("Error: Could not retrieve generated Animal ID.");
     }
 
-    public Task<Animal?> GetByIdAsync(string id)
+    public async Task<Animal?> GetByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        const string query = AnimalQueries.GetById;
+
+        return await DbHelper.QuerySingleAsync(
+            _connectionFactory,
+            query,
+            cmd => cmd.Parameters.AddWithValue("id", id),
+            AnimalMapper.Map
+        );
     }
 
-    public Task<IEnumerable<Animal>> GetAllActiveAsync()
+    public async Task<IEnumerable<Animal>> GetAllActiveAsync()
     {
-        throw new NotImplementedException();
+        const string query = AnimalQueries.GetAllActive;
+
+        return await DbHelper.QueryListAsync(
+            _connectionFactory,
+            query,
+            bind: null,
+            AnimalMapper.Map
+        );
     }
 
-    public Task<bool> UpdateAsync(Animal animal)
+    public async Task<bool> UpdateAsync(Animal animal)
     {
-        throw new NotImplementedException();
+        const string query = AnimalQueries.Update;
+
+        var rows = await DbHelper.ExecuteNonQueryAsync(
+            _connectionFactory,
+            query,
+            cmd =>
+            {
+                cmd.Parameters.AddWithValue("id", animal.Id);
+                cmd.Parameters.AddWithValue("name", animal.Name);
+                cmd.Parameters.AddWithValue("colors", DbHelper.DbValue(animal.Colors));
+                cmd.Parameters.AddWithValue("description", DbHelper.DbValue(animal.Description));
+                cmd.Parameters.AddWithValue("particularities", DbHelper.DbValue(animal.Particularities));
+                cmd.Parameters.AddWithValue("status", animal.CurrentStatus);
+            }
+        );
+
+        return rows > 0;
     }
-    public Task<bool> DeleteAsync(string id)
+
+    public async Task<bool> DeleteAsync(string id)
     {
-        throw new NotImplementedException();
+        const string query = AnimalQueries.SoftDelete;
+
+        var rows = await DbHelper.ExecuteNonQueryAsync(
+            _connectionFactory,
+            query,
+            cmd => cmd.Parameters.AddWithValue("id", id)
+        );
+
+        return rows > 0;
     }
 }

@@ -1,4 +1,4 @@
-using System.Data;
+using AnimalShelter.DAL.Infrastructure.Interfaces;
 using dotenv.net;
 using Npgsql;
 
@@ -6,9 +6,9 @@ namespace AnimalShelter.DAL.Infrastructure;
 
 public class DbConnectionFactory
 {
-    private readonly string _connectionString;
+    private readonly NpgsqlDataSource _dataSource;
 
-    public DbConnectionFactory()
+    public DbConnectionFactory(IEnumMapper enumMapper)
     {
         // Chargement du fichier .env pour les variables de la DB (se trouve dans ./docker/.env).
         DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { "../../docker/.env" }));
@@ -24,12 +24,18 @@ public class DbConnectionFactory
             throw new InvalidOperationException("Database environment variables are not properly set in .env file.");
         }
 
-        _connectionString = $"Host={host};Port={port};Username={user};Password={password};Database={db};";
+        string connectionString = $"Host={host};Port={port};Username={user};Password={password};Database={db};";
+
+        var builder = new NpgsqlDataSourceBuilder(connectionString);
+
+        // Mapping des enums PostgreSQL via l'EnumMapper
+        enumMapper.MapEnums(builder);
+
+        _dataSource = builder.Build();
     }
 
-    // Crée et retourne une nouvelle connexion vers PostgreSQL pour instancier une NpgsqlConnection.
-    public IDbConnection CreateConnection()
+    public NpgsqlConnection CreateConnection()
     {
-        return new NpgsqlConnection(_connectionString);
+        return _dataSource.OpenConnection();
     }
 }

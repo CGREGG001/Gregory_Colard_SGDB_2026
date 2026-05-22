@@ -1,0 +1,25 @@
+namespace AnimalShelter.Core.Constants;
+
+public static class ExceptionMessages
+{
+    // Validation de base
+    public const string AnimalNameRequired = "The animal's name is mandatory.";
+    public const string NameTooLong = "The name cannot exceed 100 characters.";
+    public const string ColorsTooLong = "The colors description cannot exceed 100 characters.";
+
+    // Cohérence des dates
+    public const string BirthDateInFuture = "The birth date cannot be in the future.";
+    public const string SterilizationInFuture = "The sterilization date cannot be in the future.";
+    public const string DeathInFuture = "The death date cannot be in the future.";
+    public const string SterilizationBeforeBirth = "The sterilization date cannot be before the birth date.";
+    public const string DeathBeforeBirth = "The death date cannot be before the birth date.";
+
+    // État et existence
+    public const string AnimalNotFound = "The specified animal was not found.";
+    public const string AnimalAlreadyExists = "An animal with the same characteristics already exists in the system.";
+    public const string CannotUpdateDeadAnimal = "Cannot update an animal that is already marked as deceased.";
+
+    // Technique
+    public const string DatabaseError = "A technical error occurred with the database.";
+    public const string InvalidId = "The provided ID format is invalid.";
+}

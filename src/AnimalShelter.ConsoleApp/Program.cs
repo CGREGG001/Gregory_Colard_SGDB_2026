@@ -4,6 +4,7 @@ using AnimalShelter.DAL.Repositories;
 using AnimalShelter.DAL.Infrastructure;
 using AnimalShelter.DAL.Infrastructure.Enums;
 using AnimalShelter.ConsoleApp.UI.Utilities;
+using AnimalShelter.ConsoleApp.TechTests; // Pour Tech Test uniquement !
 
 // 1. Composition Root (Initialisation)
 var enumMapper = new EnumMapper();
@@ -23,13 +24,14 @@ while (!exit)
 {
     UIHelper.ShowTitleMenu("Animal Management");
     Console.WriteLine("1. Manage Animals");
-    Console.WriteLine("2. Manage Contacts (Coming Soon)");
+    Console.WriteLine("2. Manage Contacts (Tech Test)");
     Console.WriteLine("0. Exit");
     Console.Write("\nChoice: ");
 
     switch (Console.ReadLine())
     {
         case "1": await animalUI.ShowMenuAsync(); break;
+        case "2": await ContactDallTechTest.RunAsync(); break;
         case "0": exit = true; break;
         default: Console.WriteLine("Invalid option."); break;
     }

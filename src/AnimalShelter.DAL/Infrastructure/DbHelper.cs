@@ -15,10 +15,12 @@ namespace AnimalShelter.DAL.Infrastructure
         /// <returns>
         /// L'objet T si un enregistrement est trouvé, sinon null.
         /// </returns>
-        public static async Task<T?> QuerySingleAsync<T>(DbConnectionFactory factory,
-        string sql, Action<NpgsqlCommand> bind, Func<NpgsqlDataReader, T> map)
+        public static async Task<T?> QuerySingleAsync<T>(
+            NpgsqlConnection connection,
+            string sql,
+            Action<NpgsqlCommand> bind,
+            Func<NpgsqlDataReader, T> map)
         {
-            await using var connection = factory.CreateConnection();
             await using var cmd = new NpgsqlCommand(sql, connection);
 
             bind(cmd);
@@ -38,12 +40,14 @@ namespace AnimalShelter.DAL.Infrastructure
         /// <returns>
         /// Une liste d'objets T (peut être vide).
         /// </returns>
-        public static async Task<List<T>> QueryListAsync<T>(DbConnectionFactory factory,
-        string sql, Action<NpgsqlCommand>? bind, Func<NpgsqlDataReader, T> map)
+        public static async Task<List<T>> QueryListAsync<T>(
+            NpgsqlConnection connection,
+            string sql,
+            Action<NpgsqlCommand>? bind,
+            Func<NpgsqlDataReader, T> map)
         {
             var list = new List<T>();
 
-            await using var connection = factory.CreateConnection();
             await using var cmd = new NpgsqlCommand(sql, connection);
 
             bind?.Invoke(cmd);
@@ -64,15 +68,17 @@ namespace AnimalShelter.DAL.Infrastructure
         /// <returns>
         /// La valeur retournée par la requête (ex: un ID).
         /// </returns>
-        public static async Task<object?> ExecuteScalarAsync(DbConnectionFactory factory,
-            string sql, Action<NpgsqlCommand> bind)
+        public static async Task<T?> ExecuteScalarAsync<T>(
+            NpgsqlConnection connection,
+            string sql,
+            Action<NpgsqlCommand> bind)
         {
-            await using var connection = factory.CreateConnection();
             await using var cmd = new NpgsqlCommand(sql, connection);
 
             bind(cmd);
 
-            return await cmd.ExecuteScalarAsync();
+            var result = await cmd.ExecuteScalarAsync();
+            return result == null || result == DBNull.Value ? default : (T)result;
         }
 
         /// <summary>
@@ -84,10 +90,11 @@ namespace AnimalShelter.DAL.Infrastructure
         /// <returns>
         /// Le nombre de lignes affectées.
         /// </returns>
-        public static async Task<int> ExecuteNonQueryAsync(DbConnectionFactory factory,
-            string sql, Action<NpgsqlCommand> bind)
+        public static async Task<int> ExecuteNonQueryAsync(
+            NpgsqlConnection connection,
+            string sql,
+            Action<NpgsqlCommand> bind)
         {
-            await using var connection = factory.CreateConnection();
             await using var cmd = new NpgsqlCommand(sql, connection);
 
             bind(cmd);

@@ -58,6 +58,6 @@ public class DbConnectionFactory
 
     public NpgsqlConnection CreateConnection()
     {
-        return _dataSource.OpenConnection();
+        return _dataSource.CreateConnection();
     }
 }

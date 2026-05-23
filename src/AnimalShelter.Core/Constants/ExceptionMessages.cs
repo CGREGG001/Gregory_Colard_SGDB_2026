@@ -24,4 +24,13 @@ public static class ExceptionMessages
     // Technique
     public const string DatabaseError = "A technical error occurred with the database.";
     public const string InvalidId = "The provided ID format is invalid.";
+
+    // Contacts
+    public const string ContactLastNameRequired = "Last name is mandatory.";
+    public const string ContactFirstNameRequired = "First name is mandatory.";
+    public const string InvalidEmail = "The email address format is invalid.";
+    public const string InvalidPhone = "The phone or GSM number is invalid.";
+    public const string AtLeastOneRoleRequired = "The contact must have at least one role assigned.";
+    public const string ContactNotFound = "The specified contact was not found.";
+    public const string NationalRegisterRequired = "The National Register number is required for this role.";
 }

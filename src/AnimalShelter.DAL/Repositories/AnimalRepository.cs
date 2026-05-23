@@ -3,6 +3,7 @@ using AnimalShelter.Core.Models;
 using AnimalShelter.DAL.Infrastructure;
 using AnimalShelter.DAL.Mappers;
 using AnimalShelter.DAL.Queries;
+using Npgsql;
 
 namespace AnimalShelter.DAL.Repositories;
 
@@ -18,9 +19,10 @@ public class AnimalRepository : IAnimalRepository
     public async Task<string> AddAsync(Animal animal)
     {
         const string query = AnimalQueries.Insert;
+        await using var connection = await GetOpenConnectionAsync();
 
-        var result = await DbHelper.ExecuteScalarAsync(
-            _connectionFactory,
+        var result = await DbHelper.ExecuteScalarAsync<string>(
+            connection,
             query,
             cmd =>
             {
@@ -42,9 +44,10 @@ public class AnimalRepository : IAnimalRepository
     public async Task<Animal?> GetByIdAsync(string id)
     {
         const string query = AnimalQueries.GetById;
+        await using var connection = await GetOpenConnectionAsync();
 
         return await DbHelper.QuerySingleAsync(
-            _connectionFactory,
+            connection,
             query,
             cmd => cmd.Parameters.AddWithValue("id", id),
             AnimalMapper.Map
@@ -54,9 +57,10 @@ public class AnimalRepository : IAnimalRepository
     public async Task<IEnumerable<Animal>> GetAllActiveAsync()
     {
         const string query = AnimalQueries.GetAllActive;
+        await using var connection = await GetOpenConnectionAsync();
 
         return await DbHelper.QueryListAsync(
-            _connectionFactory,
+            connection,
             query,
             bind: null,
             AnimalMapper.Map
@@ -66,9 +70,10 @@ public class AnimalRepository : IAnimalRepository
     public async Task<bool> UpdateAsync(Animal animal)
     {
         const string query = AnimalQueries.Update;
+        await using var connection = await GetOpenConnectionAsync();
 
         var rows = await DbHelper.ExecuteNonQueryAsync(
-            _connectionFactory,
+            connection,
             query,
             cmd =>
             {
@@ -87,13 +92,21 @@ public class AnimalRepository : IAnimalRepository
     public async Task<bool> DeleteAsync(string id)
     {
         const string query = AnimalQueries.SoftDelete;
+        await using var connection = await GetOpenConnectionAsync();
 
         var rows = await DbHelper.ExecuteNonQueryAsync(
-            _connectionFactory,
+            connection,
             query,
             cmd => cmd.Parameters.AddWithValue("id", id)
         );
 
         return rows > 0;
+    }
+
+    private async Task<NpgsqlConnection> GetOpenConnectionAsync()
+    {
+        var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        return connection;
     }
 }

@@ -95,6 +95,8 @@ namespace AnimalShelter.DAL.Repositories
         {
             List<Contact> contacts = new List<Contact>();
             await using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
             await using var cmd = new NpgsqlCommand(ContactQueries.GetAll, connection);
             await using var reader = await cmd.ExecuteReaderAsync();
 

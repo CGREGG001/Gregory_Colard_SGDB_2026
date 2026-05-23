@@ -18,8 +18,7 @@ namespace AnimalShelter.DAL.Repositories
 
         public async Task<Guid> AddAsync(Contact contact)
         {
-            await using var connection = _connectionFactory.CreateConnection();
-            await connection.OpenAsync();
+            await using var connection = await GetOpenConnectionAsync();
 
             // Utilisation d'une transaction pour garantir l'intégrité (Adresse + Contact)
             await using var transaction = await connection.BeginTransactionAsync();
@@ -69,8 +68,7 @@ namespace AnimalShelter.DAL.Repositories
         {
             const string query = ContactQueries.GetById;
 
-            await using var connection = _connectionFactory.CreateConnection();
-            await connection.OpenAsync();
+            await using var connection = await GetOpenConnectionAsync();
 
             await using var cmd = new NpgsqlCommand(query, connection);
             cmd.Parameters.AddWithValue("id", id);
@@ -94,8 +92,7 @@ namespace AnimalShelter.DAL.Repositories
         public async Task<IEnumerable<Contact>> GetAllAsync()
         {
             List<Contact> contacts = new List<Contact>();
-            await using var connection = _connectionFactory.CreateConnection();
-            await connection.OpenAsync();
+            await using var connection = await GetOpenConnectionAsync();
 
             await using var cmd = new NpgsqlCommand(ContactQueries.GetAll, connection);
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -159,6 +156,13 @@ namespace AnimalShelter.DAL.Repositories
             await using var cmd = new NpgsqlCommand(ContactQueries.SoftDelete, connection);
             cmd.Parameters.AddWithValue("id", id);
             return await cmd.ExecuteNonQueryAsync() > 0;
+        }
+
+        private async Task<NpgsqlConnection> GetOpenConnectionAsync()
+        {
+            var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+            return connection;
         }
     }
 }

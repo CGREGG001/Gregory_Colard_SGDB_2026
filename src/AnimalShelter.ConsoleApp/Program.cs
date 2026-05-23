@@ -1,53 +1,39 @@
-﻿using AnimalShelter.Core.Models;
-using AnimalShelter.Core.Enums;
-using AnimalShelter.Core.Exceptions;
+﻿using AnimalShelter.ConsoleApp.UI;
+using AnimalShelter.BLL.Services;
+using AnimalShelter.DAL.Repositories;
 using AnimalShelter.DAL.Infrastructure;
 using AnimalShelter.DAL.Infrastructure.Enums;
-using AnimalShelter.DAL.Repositories;
-using AnimalShelter.BLL.Services;
+using AnimalShelter.ConsoleApp.UI.Utilities;
 
-Console.WriteLine("=== Shelter Management System - BLL Validation ===");
-
-// 1. Setup (Normalement géré par Injection de Dépendances)
+// 1. Composition Root (Initialisation)
 var enumMapper = new EnumMapper();
 var dbFactory = new DbConnectionFactory(enumMapper);
-var repo = new AnimalRepository(dbFactory);
-var service = new AnimalService(repo);
+var animalRepo = new AnimalRepository(dbFactory);
+var animalService = new AnimalService(animalRepo);
+var animalUI = new AnimalConsoleUI(animalService);
 
-try
-{
-    // TEST 1 : Validation des dates (Doit échouer)
-    Console.WriteLine("\n[Test 1] Registering animal with future birth date...");
-    await service.RegisterAnimalAsync(new Animal { Name = "FutureDog", BirthDate = DateTime.Now.AddDays(1) });
-}
-catch (ShelterException ex)
-{
-    Console.WriteLine($"Expected Error: {ex.Message} (Type: {ex.ErrorType})");
-}
+// 2. Splash Screen
+Console.Clear();
+Console.WriteLine("\n\n          === SHELTER MANAGEMENT SYSTEM v1.0 ===\n\n");
+UIHelper.ShowHeader();
 
-try
+// 3. Main Loop
+bool exit = false;
+while (!exit)
 {
-    // TEST 2 : Doublon (Rex existe déjà en base suite à ton test précédent)
-    Console.WriteLine("\n[Test 2] Registering a duplicate animal (Rex)...");
-    var rex = new Animal { Name = "Rex", Species = SpeciesEnum.Dog, BirthDate = null };
-    await service.RegisterAnimalAsync(rex);
-}
-catch (ShelterException ex)
-{
-    Console.WriteLine($"Expected Error: {ex.Message} (Type: {ex.ErrorType})");
-}
+    UIHelper.ShowTitleMenu("Animal Management");
+    Console.WriteLine("1. Manage Animals");
+    Console.WriteLine("2. Manage Contacts (Coming Soon)");
+    Console.WriteLine("0. Exit");
+    Console.Write("\nChoice: ");
 
-try
-{
-    // TEST 3 : Succès
-    Console.WriteLine("\n[Test 3] Registering a valid new animal...");
-    var luna = new Animal { Name = "Luna", Species = SpeciesEnum.Cat, Sex = SexEnum.Female, BirthDate = new DateTime(2022, 01, 15) };
-    string id = await service.RegisterAnimalAsync(luna);
-    Console.WriteLine($"Success! Luna registered with ID: {id}");
-}
-catch (ShelterException ex)
-{
-    Console.WriteLine($"Unexpected Error: {ex.Message}");
+    switch (Console.ReadLine())
+    {
+        case "1": await animalUI.ShowMenuAsync(); break;
+        case "0": exit = true; break;
+        default: Console.WriteLine("Invalid option."); break;
+    }
 }
 
-Console.WriteLine("\n=== Tests Completed ===");
+Console.Clear();
+Console.WriteLine("Goodbye!");

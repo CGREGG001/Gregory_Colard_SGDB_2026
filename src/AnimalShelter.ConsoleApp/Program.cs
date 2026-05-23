@@ -1,60 +1,53 @@
-﻿using AnimalShelter.Core.Enums;
-using AnimalShelter.Core.Models;
+﻿using AnimalShelter.Core.Models;
+using AnimalShelter.Core.Enums;
+using AnimalShelter.Core.Exceptions;
 using AnimalShelter.DAL.Infrastructure;
 using AnimalShelter.DAL.Infrastructure.Enums;
 using AnimalShelter.DAL.Repositories;
+using AnimalShelter.BLL.Services;
 
-Console.WriteLine("=== Shelter Management - Tech Test ===");
+Console.WriteLine("=== Shelter Management System - BLL Validation ===");
+
+// 1. Setup (Normalement géré par Injection de Dépendances)
+var enumMapper = new EnumMapper();
+var dbFactory = new DbConnectionFactory(enumMapper);
+var repo = new AnimalRepository(dbFactory);
+var service = new AnimalService(repo);
 
 try
 {
-    // 1. Initialisation de l'infrastructure
-    var enumMapper = new EnumMapper();
-    var connectionFactory = new DbConnectionFactory(enumMapper);
-    var animalRepo = new AnimalRepository(connectionFactory);
-
-    // 2. Test : Ajout d'un animal
-    Console.WriteLine("\n[1] Adding a new animal...");
-    var rex = new Animal
-    {
-        Name = "Rex",
-        Species = SpeciesEnum.Dog,
-        Sex = SexEnum.Male,
-        Colors = "Brown and Black",
-        Description = "A very friendly German Shepherd.",
-        IsSterilised = false
-    };
-
-    string newId = await animalRepo.AddAsync(rex);
-    Console.WriteLine($"Successfully added! Generated ID: {newId}");
-
-    // 3. Test : Lecture de tous les animaux
-    Console.WriteLine("\n[2] Fetching all active animals...");
-    var animals = await animalRepo.GetAllActiveAsync();
-
-    foreach (var a in animals)
-    {
-        Console.WriteLine($"- [{a.Id}] {a.Name} ({a.Species}) - Status: {a.CurrentStatus}");
-    }
-
-    // 4. Test : Lecture par ID
-    Console.WriteLine($"\n[3] Fetching animal by ID: {newId}");
-    var fetched = await animalRepo.GetByIdAsync(newId);
-    if (fetched != null)
-    {
-        Console.WriteLine($"Found: {fetched.Name}, Colors: {fetched.Colors}");
-    }
-
+    // TEST 1 : Validation des dates (Doit échouer)
+    Console.WriteLine("\n[Test 1] Registering animal with future birth date...");
+    await service.RegisterAnimalAsync(new Animal { Name = "FutureDog", BirthDate = DateTime.Now.AddDays(1) });
 }
-catch (Exception ex)
+catch (ShelterException ex)
 {
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"\nERROR: {ex.Message}");
-    if (ex.InnerException != null)
-    {
-        Console.WriteLine($"Inner: {ex.InnerException.Message}");
-    }
-    Console.ResetColor();
+    Console.WriteLine($"Expected Error: {ex.Message} (Type: {ex.ErrorType})");
 }
 
-Console.WriteLine("\n=== Test Finished ===");
+try
+{
+    // TEST 2 : Doublon (Rex existe déjà en base suite à ton test précédent)
+    Console.WriteLine("\n[Test 2] Registering a duplicate animal (Rex)...");
+    var rex = new Animal { Name = "Rex", Species = SpeciesEnum.Dog, BirthDate = null };
+    await service.RegisterAnimalAsync(rex);
+}
+catch (ShelterException ex)
+{
+    Console.WriteLine($"Expected Error: {ex.Message} (Type: {ex.ErrorType})");
+}
+
+try
+{
+    // TEST 3 : Succès
+    Console.WriteLine("\n[Test 3] Registering a valid new animal...");
+    var luna = new Animal { Name = "Luna", Species = SpeciesEnum.Cat, Sex = SexEnum.Female, BirthDate = new DateTime(2022, 01, 15) };
+    string id = await service.RegisterAnimalAsync(luna);
+    Console.WriteLine($"Success! Luna registered with ID: {id}");
+}
+catch (ShelterException ex)
+{
+    Console.WriteLine($"Unexpected Error: {ex.Message}");
+}
+
+Console.WriteLine("\n=== Tests Completed ===");

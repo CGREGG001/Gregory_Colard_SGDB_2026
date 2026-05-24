@@ -8,10 +8,13 @@ namespace AnimalShelter.ConsoleApp.UI;
 
 public class AnimalConsoleUI
 {
+    #region fields
     private readonly IAnimalService _animalService;
     private readonly IVaccinationService _vaccinationService;
     private readonly ICompatibilityService _compatService;
+    #endregion
 
+    #region constructors
     public AnimalConsoleUI(
         IAnimalService animalService,
         IVaccinationService vaccinationService,
@@ -21,25 +24,34 @@ public class AnimalConsoleUI
         _vaccinationService = vaccinationService;
         _compatService = compatService;
     }
+    #endregion
 
+    #region methods
     public async Task ShowMenuAsync()
     {
         bool exit = false;
+
         while (!exit)
         {
             Console.Clear();
-            UIHelper.ShowTitleMenu("Animal Management");
+            UIHelper.ShowHeader();
+            UIHelper.ShowTitle("Animal Management");
 
-            Console.WriteLine(" 1. List all active animals");
+            Console.WriteLine(" 1. List active animals");
             Console.WriteLine(" 2. Register new animal");
             Console.WriteLine(" 3. View animal details");
             Console.WriteLine(" 4. Delete animal");
             Console.WriteLine(" 5. Vaccination Management");
-            Console.WriteLine(" 6. Manage Info & Compatibility");
-            Console.WriteLine(" 0. Back to main menu");
+            Console.WriteLine(" 6. Info & Compatibility");
+            Console.WriteLine(" 0. Back");
 
-            Console.Write("\nSelect an option: ");
-            switch (Console.ReadLine())
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write("\nSelection > ");
+            Console.ResetColor();
+
+            string? choice = Console.ReadLine();
+
+            switch (choice)
             {
                 case "1": await ListAnimalsAsync(); break;
                 case "2": await RegisterAnimalAsync(); break;
@@ -51,90 +63,21 @@ public class AnimalConsoleUI
                 default: UIHelper.Warning("Invalid choice"); break;
             }
 
-            if (!exit && Console.CursorLeft != 0) // Évite d'attendre si on vient du sous-menu
+            if (!exit)
             {
-                Console.WriteLine("\nPress any key to continue...");
-                Console.ReadKey();
+                UIHelper.Pause();
             }
         }
     }
 
-    // --- SOUS-MENU VACCINATION ---
-    private async Task ShowVaccinationMenuAsync()
-    {
-        bool back = false;
-        while (!back)
-        {
-            Console.Clear();
-            UIHelper.ShowTitleMenu("Vaccination Management");
-            Console.WriteLine(" 1. View animal vaccination history");
-            Console.WriteLine(" 2. Add new vaccine to animal");
-            Console.WriteLine(" 0. Back to Animal Management");
-
-            Console.Write("\nChoice: ");
-            switch (Console.ReadLine())
-            {
-                case "1": await ViewVaccinationHistoryAsync(); break;
-                case "2": await AddVaccineAsync(); break;
-                case "0": back = true; break;
-                default: UIHelper.Warning("Invalid choice"); break;
-            }
-
-            if (!back)
-            {
-                Console.WriteLine("\nPress any key to continue...");
-                Console.ReadKey();
-            }
-        }
-    }
-
-    // --- SOUS-MENU COMPATIBILITE ---
-    private async Task ShowCompatibilityMenuAsync()
-    {
-        Console.Clear();
-        UIHelper.ShowTitleMenu("Info & Compatibility");
-        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
-
-        bool back = false;
-        while (!back)
-        {
-            Console.WriteLine("\n1. View/Add Compatibility (OK Cat, etc.)");
-            Console.WriteLine("2. Update Description & Particularities");
-            Console.WriteLine("3. Remove Compatibility");
-            Console.WriteLine("0. Back");
-            
-            switch (Console.ReadLine())
-            {
-                case "1":
-                    var c = new Compatibility {
-                        AnimalId = animalId,
-                        TargetType = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Target Type"),
-                        ValueEnum = ConsoleHelper.GetEnum<CompatibilityValueEnum>("Value"),
-                        Description = ConsoleHelper.GetString("Additional Note")
-                    };
-                    await _compatService.SetCompatibilityAsync(c);
-                    UIHelper.Success("Compatibility updated.");
-                    break;
-                case "2":
-                    string desc = ConsoleHelper.GetString("Description");
-                    string part = ConsoleHelper.GetString("Particularities");
-                    await _compatService.UpdateAnimalNotesAsync(animalId, desc, part);
-                    UIHelper.Success("Animal notes updated.");
-                    break;
-                case "3":
-                    var type = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Type to remove");
-                    await _compatService.DeleteCompatibilityAsync(animalId, type);
-                    UIHelper.Success("Compatibility removed.");
-                    break;
-                case "0": back = true; break;
-            }
-        }
-    }
-
-    // --- FONCTIONNALITÉS ANIMAL ---
+    // ============================================================
+    //  LIST ANIMALS
+    // ============================================================
     private async Task ListAnimalsAsync()
     {
-        UIHelper.DrawBox("Active Animals");
+        Console.Clear();
+        UIHelper.ShowTitle("Active Animals");
+
         var animals = await _animalService.GetAvailableAnimalsAsync();
 
         if (!animals.Any())
@@ -143,31 +86,38 @@ public class AnimalConsoleUI
             return;
         }
 
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("{0,-12} {1,-15} {2,-10} {3,-10}", "ID", "Name", "Species", "Status");
-        Console.ResetColor();
-        Console.WriteLine(new string('-', 50));
+        var rows = animals
+            .Select(a => new string[]
+            {
+                a.Id,
+                a.Name,
+                a.Species.ToString(),
+                a.CurrentStatus.ToString()
+            })
+            .ToList();
 
-        foreach (var a in animals)
-        {
-            Console.WriteLine("{0,-12} {1,-15} {2,-10} {3,-10}", a.Id, a.Name, a.Species, a.CurrentStatus);
-        }
-
-        Console.WriteLine("\nPress any key to continue...");
-        Console.ReadKey();
+        UIHelper.ShowTable(
+            new[] { "ID", "Name", "Species", "Status" },
+            rows
+        );
     }
 
+    // ============================================================
+    //  REGISTER ANIMAL
+    // ============================================================
     private async Task RegisterAnimalAsync()
     {
-        UIHelper.DrawBox("Register New Animal");
+        Console.Clear();
+        UIHelper.ShowTitle("Register New Animal");
+
         try
         {
             var animal = new Animal
             {
                 Name = ConsoleHelper.GetRequiredString("Name"),
-                Species = ConsoleHelper.GetEnum<SpeciesEnum>("Species"),
-                Sex = ConsoleHelper.GetEnum<SexEnum>("Sex"),
-                BirthDate = ConsoleHelper.GetOptionalDate("Birth Date"),
+                Species = UIHelper.AskEnum<SpeciesEnum>("Species"),
+                Sex = UIHelper.AskEnum<SexEnum>("Sex"),
+                BirthDate = UIHelper.AskDate("Birth Date", optional: true),
                 Colors = ConsoleHelper.GetString("Colors"),
                 Description = ConsoleHelper.GetString("Description")
             };
@@ -175,81 +125,115 @@ public class AnimalConsoleUI
             string id = await _animalService.RegisterAnimalAsync(animal);
             UIHelper.Success($"Animal registered successfully! Assigned ID: {id}");
         }
-        catch (ShelterException ex) { DisplayError(ex); }
+        catch (ShelterException ex)
+        {
+            UIHelper.Error(ex.Message);
+        }
     }
 
+    // ============================================================
+    //  VIEW DETAILS
+    // ============================================================
     private async Task ViewDetailsAsync()
     {
-        UIHelper.DrawBox("Animal Details");
+        Console.Clear();
+        UIHelper.ShowTitle("Animal Details");
+
         string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
         var animal = await _animalService.GetAnimalAsync(id);
 
-        if (animal == null) { UIHelper.Warning("Animal not found."); return; }
+        if (animal == null)
+        {
+            UIHelper.Warning("Animal not found.");
+            return;
+        }
 
-        // --- Infos de base ---
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("ID: " + animal.Id);
-        Console.WriteLine("Name: " + animal.Name);
-        Console.WriteLine("Species: " + animal.Species);
-        Console.WriteLine("Sex: " + animal.Sex);
-        Console.WriteLine("Birth Date: " + (animal.BirthDate?.ToShortDateString() ?? "Unknown"));
-        Console.WriteLine("Colors: " + animal.Colors);
-        Console.WriteLine("Description: " + animal.Description);
-        Console.WriteLine("Particularities: " + animal.Particularities);
+        Console.WriteLine($"ID: {animal.Id}");
+        Console.WriteLine($"Name: {animal.Name}");
+        Console.WriteLine($"Species: {animal.Species}");
+        Console.WriteLine($"Sex: {animal.Sex}");
+        Console.WriteLine($"Birth Date: {animal.BirthDate?.ToShortDateString() ?? "Unknown"}");
+        Console.WriteLine($"Colors: {animal.Colors}");
+        Console.WriteLine($"Description: {animal.Description}");
+        Console.WriteLine($"Particularities: {animal.Particularities}");
         Console.ResetColor();
 
         Console.WriteLine("\n----------------------------------------");
 
-        // --- Vaccinations ---
+        await ShowVaccinationSectionAsync(id);
+        await ShowCompatibilitySectionAsync(id);
+    }
+
+    private async Task ShowVaccinationSectionAsync(string animalId)
+    {
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("Vaccination History:");
         Console.ResetColor();
 
-        var vaccines = await _vaccinationService.GetAnimalVaccinationHistoryAsync(id);
+        var vaccines = await _vaccinationService.GetAnimalVaccinationHistoryAsync(animalId);
 
         if (!vaccines.Any())
         {
             Console.WriteLine("  No vaccination records.");
+            return;
         }
-        else
-        {
-            foreach (var v in vaccines)
+
+        var rows = vaccines
+            .Select(vaccine => new string[]
             {
-                Console.WriteLine($"  - {v.VaccineDate.ToShortDateString()} : {v.VaccineName} ({(v.IsDone ? "DONE" : "PENDING")})");
-            }
-        }
+                vaccine.VaccineDate.ToShortDateString(),
+                vaccine.VaccineName,
+                vaccine.IsDone ? "DONE" : "PENDING"
+            })
+            .ToList();
 
-        Console.WriteLine("\n----------------------------------------");
+        UIHelper.ShowTable(
+            new[] { "Date", "Vaccine", "Status" },
+            rows
+        );
+    }
 
-        // --- Compatibilités ---
+    private async Task ShowCompatibilitySectionAsync(string animalId)
+    {
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Compatibility:");
+        Console.WriteLine("\nCompatibility:");
         Console.ResetColor();
 
-        var compat = await _compatService.GetAnimalCompatibilitiesAsync(id);
+        var compat = await _compatService.GetAnimalCompatibilitiesAsync(animalId);
 
         if (!compat.Any())
         {
             Console.WriteLine("  No compatibility data.");
-        }
-        else
-        {
-            foreach (var c in compat)
-            {
-                Console.WriteLine($"  - {c.TargetType}: {c.ValueEnum} {(string.IsNullOrWhiteSpace(c.Description) ? "" : $"({c.Description})")}");
-            }
+            return;
         }
 
-        Console.WriteLine("\nPress any key to continue...");
-        Console.ReadKey();
+        var rows = compat
+            .Select(c => new string[]
+            {
+                c.TargetType.ToString(),
+                c.ValueEnum.ToString(),
+                c.Description ?? ""
+            })
+            .ToList();
+
+        UIHelper.ShowTable(
+            new[] { "Type", "Value", "Description" },
+            rows
+        );
     }
 
+    // ============================================================
+    //  DELETE ANIMAL
+    // ============================================================
     private async Task DeleteAnimalAsync()
     {
-        UIHelper.DrawBox("Delete Animal");
-        string id = ConsoleHelper.GetRequiredString("Enter Animal ID to delete");
+        Console.Clear();
+        UIHelper.ShowTitle("Delete Animal");
 
-        if (!ConsoleHelper.GetBool("Are you sure you want to delete this animal"))
+        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
+
+        if (!UIHelper.Confirm("Are you sure you want to delete this animal"))
         {
             UIHelper.Warning("Deletion cancelled.");
             return;
@@ -260,92 +244,132 @@ public class AnimalConsoleUI
             if (await _animalService.SoftDeleteAnimalAsync(id))
                 UIHelper.Success("Animal deleted successfully.");
         }
-        catch (ShelterException ex) { DisplayError(ex); }
+        catch (ShelterException ex)
+        {
+            UIHelper.Error(ex.Message);
+        }
     }
 
-    private void DisplayError(ShelterException ex)
+    // ============================================================
+    //  SUB-MENUS
+    // ============================================================
+    private async Task ShowVaccinationMenuAsync()
     {
-        UIHelper.Error($"[Type: {ex.ErrorType}]\nMessage: {ex.Message}");
+
+        bool back = false;
+
+        while (!back)
+        {
+            Console.Clear();
+            UIHelper.ShowTitle("Vaccination Management");
+
+            Console.WriteLine(" 1. View vaccination history");
+            Console.WriteLine(" 2. Add new vaccine");
+            Console.WriteLine(" 0. Back");
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write("\nSelection > ");
+            Console.ResetColor();
+
+            string? choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1": await ViewVaccinationHistoryAsync(); break;
+                case "2": await AddVaccineAsync(); break;
+                case "0": back = true; break;
+                default: UIHelper.Warning("Invalid choice"); break;
+            }
+
+        }
     }
 
-    // --- FONCTIONNALITÉS VACCINATION ---
+    private async Task ShowCompatibilityMenuAsync()
+    {
+        Console.Clear();
+        UIHelper.ShowTitle("Info & Compatibility");
+
+        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
+
+        Console.WriteLine(" 1. Add/Update Compatibility");
+        Console.WriteLine(" 2. Update Description & Particularities");
+        Console.WriteLine(" 3. Remove Compatibility");
+        Console.WriteLine(" 0. Back");
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.Write("\nSelection > ");
+        Console.ResetColor();
+
+        string? choice = Console.ReadLine();
+
+        switch (choice)
+        {
+            case "1":
+                var c = new Compatibility
+                {
+                    AnimalId = id,
+                    TargetType = UIHelper.AskEnum<CompatibilityTypeEnum>("Target Type"),
+                    ValueEnum = UIHelper.AskEnum<CompatibilityValueEnum>("Value"),
+                    Description = ConsoleHelper.GetString("Additional Note")
+                };
+                await _compatService.SetCompatibilityAsync(c);
+                UIHelper.Success("Compatibility updated.");
+                break;
+
+            case "2":
+                string desc = ConsoleHelper.GetString("Description");
+                string part = ConsoleHelper.GetString("Particularities");
+                await _compatService.UpdateAnimalNotesAsync(id, desc, part);
+                UIHelper.Success("Notes updated.");
+                break;
+
+            case "3":
+                var type = UIHelper.AskEnum<CompatibilityTypeEnum>("Type to remove");
+                await _compatService.DeleteCompatibilityAsync(id, type);
+                UIHelper.Success("Compatibility removed.");
+                break;
+        }
+    }
+
+    // ============================================================
+    //  VACCINATION ACTIONS
+    // ============================================================
     private async Task ViewVaccinationHistoryAsync()
     {
-        UIHelper.DrawBox("Vaccination History");
-        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
+        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
 
-        try
-        {
-            var history = await _vaccinationService.GetAnimalVaccinationHistoryAsync(animalId);
+        Console.Clear();
+        UIHelper.ShowTitle("Vaccination History");
 
-            if (!history.Any())
-            {
-                UIHelper.Warning("No vaccination records found for this animal.");
-                return;
-            }
+        await ShowVaccinationSectionAsync(id);
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("{0,-15} {1,-20} {2,-10}", "Date", "Vaccine Name", "Status");
-            Console.ResetColor();
-            Console.WriteLine(new string('-', 45));
-
-            foreach (var v in history)
-            {
-                Console.WriteLine("{0,-15} {1,-20} {2,-10}",
-                    v.VaccineDate.ToShortDateString(), v.VaccineName, v.IsDone ? "DONE" : "PENDING");
-            }
-        }
-        catch (ShelterException ex) { DisplayError(ex); }
+        UIHelper.Pause();
     }
 
     private async Task AddVaccineAsync()
     {
-        UIHelper.DrawBox("Add New Vaccine");
-        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
+        Console.Clear();
+        UIHelper.ShowTitle("Add New Vaccine");
+
+        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
 
         try
         {
             var vaccine = new Vaccination
             {
-                AnimalId = animalId,
+                AnimalId = id,
                 VaccineName = ConsoleHelper.GetRequiredString("Vaccine Name"),
-                VaccineDate = ConsoleHelper.GetOptionalDate("Date (Leave empty for today)") ?? DateTime.Now,
-                IsDone = ConsoleHelper.GetBool("Is the vaccine already administered")
+                VaccineDate = UIHelper.AskDate("Date", optional: true),
+                IsDone = UIHelper.Confirm("Is the vaccine already administered")
             };
 
             await _vaccinationService.RegisterVaccinationAsync(vaccine);
-            UIHelper.Success("Vaccination record added successfully.");
+            UIHelper.Success("Vaccination record added.");
         }
-        catch (ShelterException ex) { DisplayError(ex); }
-    }
-
-    // --- FONCTIONNALITÉS COMPATIBILITE ---
-    private async Task ManageCompatibilityMenuAsync()
-    {
-        UIHelper.DrawBox("Info & Compatibility");
-        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
-        
-        Console.WriteLine("1. View/Add Compatibility (OK Cat, OK Dog...)");
-        Console.WriteLine("2. Update Description & Particularities");
-        Console.WriteLine("3. Remove a Compatibility");
-        
-        string choice = Console.ReadLine();
-
-        if (choice == "1") {
-            var compatibility = new Compatibility {
-                AnimalId = id,
-                TargetType = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Target Type"),
-                ValueEnum = ConsoleHelper.GetEnum<CompatibilityValueEnum>("Value"),
-                Description = ConsoleHelper.GetString("Note (Optional)")
-            };
-            await _compatService.SetCompatibilityAsync(compatibility);
-            UIHelper.Success("Compatibility updated.");
-        }
-        else if (choice == "2") {
-            string desc = ConsoleHelper.GetString("New Description");
-            string part = ConsoleHelper.GetString("New Particularities");
-            await _compatService.UpdateAnimalNotesAsync(id, desc, part);
-            UIHelper.Success("Notes updated.");
+        catch (ShelterException ex)
+        {
+            UIHelper.Error(ex.Message);
         }
     }
+    #endregion
 }

@@ -22,6 +22,10 @@ namespace AnimalShelter.BLL.Services
             // 1. Si un registre national est fourni en clair, on le chiffre
             if (!string.IsNullOrWhiteSpace(clearNationalRegister))
             {
+                // On génère le Hash (pour l'unicité DB)
+                contact.NationalRegisterHash = EncryptionHelper.Hash(clearNationalRegister);
+
+                // On génère le Chiffré (pour la lecture sécurisée)
                 contact.NationalRegisterEncrypted = EncryptionHelper.Encrypt(clearNationalRegister);
             }
 
@@ -34,6 +38,12 @@ namespace AnimalShelter.BLL.Services
             }
             catch (NpgsqlException ex)
             {
+                // Détection de la violation de contrainte UNIQUE
+                if (ex.SqlState == "23505") // PostgreSQL unique_violation
+                {
+                    throw new ShelterException(ExceptionMessages.NationalRegisterAlreadyExists,
+                        ErrorTypeEnum.ValidationError, ex);
+                }
                 throw new ShelterException(ExceptionMessages.DatabaseError, ErrorTypeEnum.DatabaseError, ex);
             }
         }

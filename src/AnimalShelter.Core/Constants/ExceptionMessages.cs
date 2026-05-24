@@ -33,4 +33,5 @@ public static class ExceptionMessages
     public const string AtLeastOneRoleRequired = "The contact must have at least one role assigned.";
     public const string ContactNotFound = "The specified contact was not found.";
     public const string NationalRegisterRequired = "The National Register number is required for this role.";
+    public const string NationalRegisterAlreadyExists = "This National Register number is already registered.";
 }

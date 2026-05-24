@@ -45,5 +45,12 @@ namespace AnimalShelter.BLL.Helpers
 
             return sr.ReadToEnd();
         }
+
+        public static byte[] Hash(string input)
+        {
+            // On utilise SHA256 pour un hashage robuste et déterministe
+            using var sha = SHA256.Create();
+            return sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+        }
     }
 }

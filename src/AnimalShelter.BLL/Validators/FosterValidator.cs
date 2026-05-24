@@ -26,7 +26,7 @@ public static class FosterValidator
 
         if (stay.EndDate.HasValue && stay.EndDate < stay.StartDate)
         {
-            throw new ShelterException("End date cannot be before start date.", ErrorTypeEnum.ValidationError);
+            throw new ShelterException(ExceptionMessages.FosterEndDateBeforeStart, ErrorTypeEnum.ValidationError);
         }
     }
 }

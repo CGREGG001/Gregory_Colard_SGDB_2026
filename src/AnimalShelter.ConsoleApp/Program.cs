@@ -16,7 +16,7 @@ var animalUI = new AnimalConsoleUI(animalService);
 // 2. Splash Screen
 Console.Clear();
 Console.WriteLine("\n\n          === SHELTER MANAGEMENT SYSTEM v1.0 ===\n\n");
-UIHelper.ShowHeader();
+// UIHelper.ShowHeader();
 
 // 3. Main Loop
 bool exit = false;
@@ -31,7 +31,7 @@ while (!exit)
     switch (Console.ReadLine())
     {
         case "1": await animalUI.ShowMenuAsync(); break;
-        case "2": await ContactDallTechTest.RunAsync(); break;
+        case "2": await ContactBllTechTest.RunAsync(); break;
         case "0": exit = true; break;
         default: Console.WriteLine("Invalid option."); break;
     }

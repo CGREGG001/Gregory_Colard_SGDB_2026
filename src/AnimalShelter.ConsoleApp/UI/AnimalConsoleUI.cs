@@ -9,10 +9,12 @@ namespace AnimalShelter.ConsoleApp.UI;
 public class AnimalConsoleUI
 {
     private readonly IAnimalService _animalService;
+    private readonly IVaccinationService _vaccinationService;
 
-    public AnimalConsoleUI(IAnimalService animalService)
+    public AnimalConsoleUI(IAnimalService animalService, IVaccinationService vaccinationService)
     {
         _animalService = animalService;
+        _vaccinationService = vaccinationService;
     }
 
     public async Task ShowMenuAsync()
@@ -27,39 +29,51 @@ public class AnimalConsoleUI
             Console.WriteLine(" 2. Register new animal");
             Console.WriteLine(" 3. View animal details");
             Console.WriteLine(" 4. Delete animal (Soft Delete)");
+            Console.WriteLine(" 5. Vaccination Management"); // Nouvelle option
             Console.WriteLine(" 0. Back to main menu");
-            Console.ResetColor();
 
             Console.Write("\nSelect an option: ");
             switch (Console.ReadLine())
             {
-                case "1":
-                    Console.Clear();
-                    await ListAnimalsAsync();
-                    break;
-                case "2":
-                    Console.Clear();
-                    await RegisterAnimalAsync();
-                    break;
-                case "3":
-                    Console.Clear();
-                    await ViewDetailsAsync();
-                    break;
-                case "4":
-                    Console.Clear();
-                    await DeleteAnimalAsync();
-                    break;
-                case "0":
-                    Console.Clear();
-                    exit = true;
-                    break;
-                default:
-                    Console.Clear();
-                    UIHelper.Warning("Invalid choice");
-                    break;
+                case "1": await ListAnimalsAsync(); break;
+                case "2": await RegisterAnimalAsync(); break;
+                case "3": await ViewDetailsAsync(); break;
+                case "4": await DeleteAnimalAsync(); break;
+                case "5": await ShowVaccinationMenuAsync(); break; // Vers le sous-menu
+                case "0": exit = true; break;
+                default: UIHelper.Warning("Invalid choice"); break;
             }
 
-            if (!exit)
+            if (!exit && Console.CursorLeft != 0) // Évite d'attendre si on vient du sous-menu
+            {
+                Console.WriteLine("\nPress any key to continue...");
+                Console.ReadKey();
+            }
+        }
+    }
+
+    // --- SOUS-MENU VACCINATION ---
+    private async Task ShowVaccinationMenuAsync()
+    {
+        bool back = false;
+        while (!back)
+        {
+            Console.Clear();
+            UIHelper.ShowTitleMenu("Vaccination Management");
+            Console.WriteLine(" 1. View animal vaccination history");
+            Console.WriteLine(" 2. Add new vaccine to animal");
+            Console.WriteLine(" 0. Back to Animal Management");
+
+            Console.Write("\nChoice: ");
+            switch (Console.ReadLine())
+            {
+                case "1": await ViewVaccinationHistoryAsync(); break;
+                case "2": await AddVaccineAsync(); break;
+                case "0": back = true; break;
+                default: UIHelper.Warning("Invalid choice"); break;
+            }
+
+            if (!back)
             {
                 Console.WriteLine("\nPress any key to continue...");
                 Console.ReadKey();
@@ -118,13 +132,6 @@ public class AnimalConsoleUI
 
         if (animal == null) { UIHelper.Warning("Animal not found."); return; }
 
-        Console.WriteLine($"\nID: {animal.Id}");
-        Console.WriteLine($"Name: {animal.Name}");
-        Console.WriteLine($"Species: {animal.Species} ({animal.Sex})");
-        Console.WriteLine($"Status: {animal.CurrentStatus}");
-        Console.WriteLine($"Birth Date: {animal.BirthDate?.ToShortDateString() ?? "Unknown"}");
-        Console.WriteLine($"Colors: {animal.Colors}");
-        Console.WriteLine($"Description: {animal.Description}");
     }
 
     private async Task DeleteAnimalAsync()
@@ -149,5 +156,57 @@ public class AnimalConsoleUI
     private void DisplayError(ShelterException ex)
     {
         UIHelper.Error($"[Type: {ex.ErrorType}]\nMessage: {ex.Message}");
+    }
+
+    // --- FONCTIONNALITÉS VACCINATION ---
+
+    private async Task ViewVaccinationHistoryAsync()
+    {
+        UIHelper.DrawBox("Vaccination History");
+        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
+
+        try
+        {
+            var history = await _vaccinationService.GetAnimalVaccinationHistoryAsync(animalId);
+
+            if (!history.Any())
+            {
+                UIHelper.Warning("No vaccination records found for this animal.");
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("{0,-15} {1,-20} {2,-10}", "Date", "Vaccine Name", "Status");
+            Console.ResetColor();
+            Console.WriteLine(new string('-', 45));
+
+            foreach (var v in history)
+            {
+                Console.WriteLine("{0,-15} {1,-20} {2,-10}",
+                    v.VaccineDate.ToShortDateString(), v.VaccineName, v.IsDone ? "DONE" : "PENDING");
+            }
+        }
+        catch (ShelterException ex) { DisplayError(ex); }
+    }
+
+    private async Task AddVaccineAsync()
+    {
+        UIHelper.DrawBox("Add New Vaccine");
+        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
+
+        try
+        {
+            var vaccine = new Vaccination
+            {
+                AnimalId = animalId,
+                VaccineName = ConsoleHelper.GetRequiredString("Vaccine Name"),
+                VaccineDate = ConsoleHelper.GetOptionalDate("Date (Leave empty for today)") ?? DateTime.Now,
+                IsDone = ConsoleHelper.GetBool("Is the vaccine already administered")
+            };
+
+            await _vaccinationService.RegisterVaccinationAsync(vaccine);
+            UIHelper.Success("Vaccination record added successfully.");
+        }
+        catch (ShelterException ex) { DisplayError(ex); }
     }
 }

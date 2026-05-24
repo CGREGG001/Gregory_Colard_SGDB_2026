@@ -4,7 +4,7 @@ namespace AnimalShelter.DAL.Queries
     {
         public const string Insert = @"
             INSERT INTO vaccinations (id_animal, vaccine_name, vaccine_date, is_done)
-            VALUES (@id_animal, @name, @date, @is_done);
+            VALUES (@id_animal, @name, @date, @is_done)
             RETURNING id_vaccin;
             ";
 

@@ -48,4 +48,8 @@ public static class ExceptionMessages
     public const string FosterContactRequired = "A contact person (foster family) is mandatory.";
     public const string AnimalAlreadyFostered = "This animal is already in a foster family.";
     public const string FosterEndDateBeforeStart = "The end date cannot be earlier than the start date.";
+
+    // Adoption File
+    public const string AdoptionAnimalIdRequired = "An animal ID is required for an adoption file.";
+    public const string AdoptionContactRequired = "A candidate contact is required to create an adoption file.";
 }

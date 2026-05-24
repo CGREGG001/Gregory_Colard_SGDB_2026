@@ -80,6 +80,7 @@ CREATE TABLE contacts (
     last_name VARCHAR(150) NOT NULL,
     first_name VARCHAR(150) NOT NULL,
     national_register_encrypted BYTEA, -- Encrypted at BLL level
+    national_register_hash BYTEA, -- Hash for unicity
     gsm VARCHAR(50),
     phone VARCHAR(50),
     email VARCHAR(255),
@@ -89,6 +90,7 @@ CREATE TABLE contacts (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
+    CONSTRAINT uq_contacts_national_register_hash UNIQUE (national_register_hash)
 );
 
 -- Compatibility traits (One row per type per animal)

@@ -9,6 +9,8 @@ namespace AnimalShelter.Core.Models
 
         // Stocké en binaire car chiffré dans la BLL
         public byte[]? NationalRegisterEncrypted { get; set; }
+        // Stocké en binaire également
+        public byte[]? NationalRegisterHash { get; set; }
 
         public string? Gsm { get; set; }
         public string? Phone { get; set; }

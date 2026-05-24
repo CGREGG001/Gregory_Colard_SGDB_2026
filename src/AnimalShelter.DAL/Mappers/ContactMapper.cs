@@ -15,6 +15,7 @@ namespace AnimalShelter.DAL.Mappers
                 LastName = reader.GetString(reader.GetOrdinal("last_name")),
                 FirstName = reader.GetString(reader.GetOrdinal("first_name")),
                 NationalRegisterEncrypted = reader.IsDBNull(reader.GetOrdinal("national_register_encrypted")) ? null : (byte[])reader["national_register_encrypted"],
+                NationalRegisterHash = reader.IsDBNull(reader.GetOrdinal("national_register_hash")) ? null : (byte[])reader["national_register_hash"],
                 Gsm = reader.IsDBNull(reader.GetOrdinal("gsm")) ? null : reader.GetString(reader.GetOrdinal("gsm")),
                 Phone = reader.IsDBNull(reader.GetOrdinal("phone")) ? null : reader.GetString(reader.GetOrdinal("phone")),
                 Email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString(reader.GetOrdinal("email")),

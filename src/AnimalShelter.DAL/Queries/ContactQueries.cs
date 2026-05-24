@@ -4,9 +4,9 @@ namespace AnimalShelter.DAL.Queries
     {
         public const string Insert = @"
         INSERT INTO contacts 
-            (id_address, last_name, first_name, national_register_encrypted, gsm, phone, email, role_flags, rgpd_consent_date)
+            (id_address, last_name, first_name, national_register_encrypted, national_register_hash, gsm, phone, email, role_flags, rgpd_consent_date)
         VALUES 
-            (@id_address, @last_name, @first_name, @nr_encrypted, @gsm, @phone, @email, @role_flags, @rgpd_date)
+            (@id_address, @last_name, @first_name, @nr_encrypted, @nr_hash,@gsm, @phone, @email, @role_flags, @rgpd_date)
         RETURNING id_person;";
 
         public const string GetById = @"

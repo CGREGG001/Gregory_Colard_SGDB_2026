@@ -46,6 +46,7 @@ namespace AnimalShelter.DAL.Repositories
                 cmd.Parameters.AddWithValue("last_name", contact.LastName);
                 cmd.Parameters.AddWithValue("first_name", contact.FirstName);
                 cmd.Parameters.AddWithValue("nr_encrypted", (object?)contact.NationalRegisterEncrypted ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("nr_hash", (object?)contact.NationalRegisterHash ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("gsm", (object?)contact.Gsm ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("phone", (object?)contact.Phone ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("email", (object?)contact.Email ?? DBNull.Value);

@@ -34,4 +34,8 @@ public static class ExceptionMessages
     public const string ContactNotFound = "The specified contact was not found.";
     public const string NationalRegisterRequired = "The National Register number is required for this role.";
     public const string NationalRegisterAlreadyExists = "This National Register number is already registered.";
+
+    // Vaccination
+    public const string VaccineNameRequired = "The vaccine name is mandatory.";
+    public const string InvalidVaccineDate = "The vaccination date cannot be in the future.";
 }

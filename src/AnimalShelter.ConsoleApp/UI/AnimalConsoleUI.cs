@@ -10,11 +10,16 @@ public class AnimalConsoleUI
 {
     private readonly IAnimalService _animalService;
     private readonly IVaccinationService _vaccinationService;
+    private readonly ICompatibilityService _compatService;
 
-    public AnimalConsoleUI(IAnimalService animalService, IVaccinationService vaccinationService)
+    public AnimalConsoleUI(
+        IAnimalService animalService,
+        IVaccinationService vaccinationService,
+        ICompatibilityService compatService)
     {
         _animalService = animalService;
         _vaccinationService = vaccinationService;
+        _compatService = compatService;
     }
 
     public async Task ShowMenuAsync()
@@ -28,8 +33,9 @@ public class AnimalConsoleUI
             Console.WriteLine(" 1. List all active animals");
             Console.WriteLine(" 2. Register new animal");
             Console.WriteLine(" 3. View animal details");
-            Console.WriteLine(" 4. Delete animal (Soft Delete)");
-            Console.WriteLine(" 5. Vaccination Management"); // Nouvelle option
+            Console.WriteLine(" 4. Delete animal");
+            Console.WriteLine(" 5. Vaccination Management");
+            Console.WriteLine(" 6. Manage Info & Compatibility");
             Console.WriteLine(" 0. Back to main menu");
 
             Console.Write("\nSelect an option: ");
@@ -40,6 +46,7 @@ public class AnimalConsoleUI
                 case "3": await ViewDetailsAsync(); break;
                 case "4": await DeleteAnimalAsync(); break;
                 case "5": await ShowVaccinationMenuAsync(); break; // Vers le sous-menu
+                case "6": await ShowCompatibilityMenuAsync(); break; // Vers le sous-menu
                 case "0": exit = true; break;
                 default: UIHelper.Warning("Invalid choice"); break;
             }
@@ -81,6 +88,50 @@ public class AnimalConsoleUI
         }
     }
 
+    // --- SOUS-MENU COMPATIBILITE ---
+    private async Task ShowCompatibilityMenuAsync()
+    {
+        Console.Clear();
+        UIHelper.ShowTitleMenu("Info & Compatibility");
+        string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
+
+        bool back = false;
+        while (!back)
+        {
+            Console.WriteLine("\n1. View/Add Compatibility (OK Cat, etc.)");
+            Console.WriteLine("2. Update Description & Particularities");
+            Console.WriteLine("3. Remove Compatibility");
+            Console.WriteLine("0. Back");
+            
+            switch (Console.ReadLine())
+            {
+                case "1":
+                    var c = new Compatibility {
+                        AnimalId = animalId,
+                        TargetType = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Target Type"),
+                        ValueEnum = ConsoleHelper.GetEnum<CompatibilityValueEnum>("Value"),
+                        Description = ConsoleHelper.GetString("Additional Note")
+                    };
+                    await _compatService.SetCompatibilityAsync(c);
+                    UIHelper.Success("Compatibility updated.");
+                    break;
+                case "2":
+                    string desc = ConsoleHelper.GetString("Description");
+                    string part = ConsoleHelper.GetString("Particularities");
+                    await _compatService.UpdateAnimalNotesAsync(animalId, desc, part);
+                    UIHelper.Success("Animal notes updated.");
+                    break;
+                case "3":
+                    var type = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Type to remove");
+                    await _compatService.DeleteCompatibilityAsync(animalId, type);
+                    UIHelper.Success("Compatibility removed.");
+                    break;
+                case "0": back = true; break;
+            }
+        }
+    }
+
+    // --- FONCTIONNALITÉS ANIMAL ---
     private async Task ListAnimalsAsync()
     {
         UIHelper.DrawBox("Active Animals");
@@ -101,6 +152,9 @@ public class AnimalConsoleUI
         {
             Console.WriteLine("{0,-12} {1,-15} {2,-10} {3,-10}", a.Id, a.Name, a.Species, a.CurrentStatus);
         }
+
+        Console.WriteLine("\nPress any key to continue...");
+        Console.ReadKey();
     }
 
     private async Task RegisterAnimalAsync()
@@ -132,6 +186,62 @@ public class AnimalConsoleUI
 
         if (animal == null) { UIHelper.Warning("Animal not found."); return; }
 
+        // --- Infos de base ---
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("ID: " + animal.Id);
+        Console.WriteLine("Name: " + animal.Name);
+        Console.WriteLine("Species: " + animal.Species);
+        Console.WriteLine("Sex: " + animal.Sex);
+        Console.WriteLine("Birth Date: " + (animal.BirthDate?.ToShortDateString() ?? "Unknown"));
+        Console.WriteLine("Colors: " + animal.Colors);
+        Console.WriteLine("Description: " + animal.Description);
+        Console.WriteLine("Particularities: " + animal.Particularities);
+        Console.ResetColor();
+
+        Console.WriteLine("\n----------------------------------------");
+
+        // --- Vaccinations ---
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Vaccination History:");
+        Console.ResetColor();
+
+        var vaccines = await _vaccinationService.GetAnimalVaccinationHistoryAsync(id);
+
+        if (!vaccines.Any())
+        {
+            Console.WriteLine("  No vaccination records.");
+        }
+        else
+        {
+            foreach (var v in vaccines)
+            {
+                Console.WriteLine($"  - {v.VaccineDate.ToShortDateString()} : {v.VaccineName} ({(v.IsDone ? "DONE" : "PENDING")})");
+            }
+        }
+
+        Console.WriteLine("\n----------------------------------------");
+
+        // --- Compatibilités ---
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Compatibility:");
+        Console.ResetColor();
+
+        var compat = await _compatService.GetAnimalCompatibilitiesAsync(id);
+
+        if (!compat.Any())
+        {
+            Console.WriteLine("  No compatibility data.");
+        }
+        else
+        {
+            foreach (var c in compat)
+            {
+                Console.WriteLine($"  - {c.TargetType}: {c.ValueEnum} {(string.IsNullOrWhiteSpace(c.Description) ? "" : $"({c.Description})")}");
+            }
+        }
+
+        Console.WriteLine("\nPress any key to continue...");
+        Console.ReadKey();
     }
 
     private async Task DeleteAnimalAsync()
@@ -159,7 +269,6 @@ public class AnimalConsoleUI
     }
 
     // --- FONCTIONNALITÉS VACCINATION ---
-
     private async Task ViewVaccinationHistoryAsync()
     {
         UIHelper.DrawBox("Vaccination History");
@@ -208,5 +317,35 @@ public class AnimalConsoleUI
             UIHelper.Success("Vaccination record added successfully.");
         }
         catch (ShelterException ex) { DisplayError(ex); }
+    }
+
+    // --- FONCTIONNALITÉS COMPATIBILITE ---
+    private async Task ManageCompatibilityMenuAsync()
+    {
+        UIHelper.DrawBox("Info & Compatibility");
+        string id = ConsoleHelper.GetRequiredString("Enter Animal ID");
+        
+        Console.WriteLine("1. View/Add Compatibility (OK Cat, OK Dog...)");
+        Console.WriteLine("2. Update Description & Particularities");
+        Console.WriteLine("3. Remove a Compatibility");
+        
+        string choice = Console.ReadLine();
+
+        if (choice == "1") {
+            var compatibility = new Compatibility {
+                AnimalId = id,
+                TargetType = ConsoleHelper.GetEnum<CompatibilityTypeEnum>("Target Type"),
+                ValueEnum = ConsoleHelper.GetEnum<CompatibilityValueEnum>("Value"),
+                Description = ConsoleHelper.GetString("Note (Optional)")
+            };
+            await _compatService.SetCompatibilityAsync(compatibility);
+            UIHelper.Success("Compatibility updated.");
+        }
+        else if (choice == "2") {
+            string desc = ConsoleHelper.GetString("New Description");
+            string part = ConsoleHelper.GetString("New Particularities");
+            await _compatService.UpdateAnimalNotesAsync(id, desc, part);
+            UIHelper.Success("Notes updated.");
+        }
     }
 }

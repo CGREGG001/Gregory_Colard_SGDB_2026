@@ -47,4 +47,5 @@ public static class ExceptionMessages
     public const string FosterStartDateRequired = "The start date of the foster stay is mandatory.";
     public const string FosterContactRequired = "A contact person (foster family) is mandatory.";
     public const string AnimalAlreadyFostered = "This animal is already in a foster family.";
+    public const string FosterEndDateBeforeStart = "The end date cannot be earlier than the start date.";
 }

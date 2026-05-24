@@ -6,29 +6,41 @@ namespace AnimalShelter.ConsoleApp.UI;
 
 public class FosterConsoleUI
 {
+    #region fields
     private readonly IFosterService _fosterService;
+    #endregion
 
+    #region constructors
     public FosterConsoleUI(IFosterService fosterService)
     {
         _fosterService = fosterService;
     }
+    #endregion
 
+    #region methods
     public async Task ShowMenuAsync()
     {
         bool exit = false;
+
         while (!exit)
         {
             Console.Clear();
-            UIHelper.ShowTitleMenu("Foster Care Management");
+            UIHelper.ShowHeader();
+            UIHelper.ShowTitle("Foster Care Management");
 
-            Console.WriteLine(" 1. List families for an animal (History)");
-            Console.WriteLine(" 2. List animals currently in a family");
-            Console.WriteLine(" 3. Register new foster stay (Move animal)");
-            Console.WriteLine(" 4. End a foster stay (Return to shelter)");
-            Console.WriteLine(" 0. Back to main menu");
+            Console.WriteLine(" 1. Animal foster history");
+            Console.WriteLine(" 2. Animals currently in a family");
+            Console.WriteLine(" 3. Register new foster stay");
+            Console.WriteLine(" 4. End a foster stay");
+            Console.WriteLine(" 0. Back");
 
-            Console.Write("\nSelect an option: ");
-            switch (Console.ReadLine())
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write("\nSelection > ");
+            Console.ResetColor();
+
+            string? choice = Console.ReadLine();
+
+            switch (choice)
             {
                 case "1": await ListFamiliesByAnimalAsync(); break;
                 case "2": await ListAnimalsByFamilyAsync(); break;
@@ -38,62 +50,127 @@ public class FosterConsoleUI
                 default: UIHelper.Warning("Invalid choice"); break;
             }
 
-            if (!exit) { Console.WriteLine("\nPress any key to continue..."); Console.ReadKey(); }
+            if (!exit)
+            {
+                UIHelper.Pause();
+            }
         }
     }
 
+    // ============================================================
+    // 1. HISTORY OF FOSTER FAMILIES FOR AN ANIMAL
+    // ============================================================
     private async Task ListFamiliesByAnimalAsync()
     {
-        UIHelper.DrawBox("Animal Foster History");
+        Console.Clear();
+        UIHelper.ShowTitle("Animal Foster History");
+
         string animalId = ConsoleHelper.GetRequiredString("Enter Animal ID");
         var history = await _fosterService.GetAnimalHistoryAsync(animalId);
 
-        if (!history.Any()) { UIHelper.Warning("No history found for this animal."); return; }
-
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("{0,-12} {1,-12} {2,-25}", "Start", "End", "Family Name");
-        Console.ResetColor();
-        foreach (var s in history)
+        if (!history.Any())
         {
-            Console.WriteLine($"{s.StartDate:yyyy-MM-dd} | {s.EndDate?.ToString("yyyy-MM-dd") ?? "CURRENT"} | {s.ContactName}");
+            UIHelper.Warning("No foster history found for this animal.");
+            return;
         }
+
+        var rows = history
+            .Select(s => new string[]
+            {
+                s.StartDate.ToString("yyyy-MM-dd"),
+                s.EndDate?.ToString("yyyy-MM-dd") ?? "CURRENT",
+                s.ContactName ?? "Unknown"
+            })
+            .ToList();
+
+        UIHelper.ShowTable(
+            new[] { "Start", "End", "Family" },
+            rows
+        );
     }
 
+    // ============================================================
+    // 2. ANIMALS CURRENTLY IN A FAMILY
+    // ============================================================
     private async Task ListAnimalsByFamilyAsync()
     {
-        UIHelper.DrawBox("Animals in Family");
-        var contactId = Guid.Parse(ConsoleHelper.GetRequiredString("Enter Contact UUID"));
+        Console.Clear();
+        UIHelper.ShowTitle("Animals in Family");
+
+        Guid contactId = UIHelper.AskGuid("Enter Contact UUID");
         var animals = await _fosterService.GetFamilyCurrentAnimalsAsync(contactId);
 
-        if (!animals.Any()) { UIHelper.Warning("No animals currently in this family."); return; }
+        if (!animals.Any())
+        {
+            UIHelper.Warning("This family is not hosting any animals.");
+            return;
+        }
 
-        foreach (var s in animals)
-            Console.WriteLine($"- {s.AnimalName} (Since {s.StartDate:yyyy-MM-dd})");
+        var rows = animals
+            .Select(a => new string[]
+            {
+                a.AnimalName ?? "Unknown",
+                a.StartDate.ToString("yyyy-MM-dd")
+            })
+            .ToList();
+
+        UIHelper.ShowTable(
+            new[] { "Animal", "Since" },
+            rows
+        );
     }
 
+    // ============================================================
+    // 3. REGISTER NEW FOSTER STAY
+    // ============================================================
     private async Task RegisterNewStayAsync()
     {
-        UIHelper.DrawBox("New Foster Placement");
-        try {
-            var stay = new FosterStay {
+        Console.Clear();
+        UIHelper.ShowTitle("New Foster Placement");
+
+        try
+        {
+            var stay = new FosterStay
+            {
                 AnimalId = ConsoleHelper.GetRequiredString("Animal ID"),
-                ContactId = Guid.Parse(ConsoleHelper.GetRequiredString("Contact UUID")),
-                StartDate = ConsoleHelper.GetOptionalDate("Start Date") ?? DateTime.Now
+                ContactId = UIHelper.AskGuid("Contact UUID"),
+                StartDate = UIHelper.AskDate("Start Date", optional: true)
             };
+
             await _fosterService.StartFosterStayAsync(stay);
             UIHelper.Success("Placement successful. Animal status updated to 'Fostered'.");
         }
-        catch (Exception ex) { UIHelper.Error(ex.Message); }
+        catch (Exception ex)
+        {
+            UIHelper.Error(ex.Message);
+        }
     }
 
+    // ============================================================
+    // 4. END FOSTER STAY
+    // ============================================================
     private async Task EndStayAsync()
     {
-        UIHelper.DrawBox("End Foster Stay");
-        Guid stayId = Guid.Parse(ConsoleHelper.GetRequiredString("Enter Stay UUID"));
-        try {
+        Console.Clear();
+        UIHelper.ShowTitle("End Foster Stay");
+
+        Guid stayId = UIHelper.AskGuid("Enter Stay UUID");
+
+        if (!UIHelper.Confirm("Confirm ending this foster stay"))
+        {
+            UIHelper.Warning("Operation cancelled.");
+            return;
+        }
+
+        try
+        {
             await _fosterService.EndFosterStayAsync(stayId, DateTime.Now);
             UIHelper.Success("Stay ended. Animal is now back at the shelter.");
         }
-        catch (Exception ex) { UIHelper.Error(ex.Message); }
+        catch (Exception ex)
+        {
+            UIHelper.Error(ex.Message);
+        }
     }
+    #endregion
 }

@@ -86,5 +86,21 @@ namespace AnimalShelter.ConsoleApp.UI.Utilities
                 Console.WriteLine("Invalid choice. Try again.");
             }
         }
+
+        public static string GetStringWithDefault(string prompt, string defaultValue)
+        {
+            //Console.ForegroundColor = PromptColor;
+            Console.Write($"{prompt} ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write($"[{defaultValue}]");
+            //Console.ForegroundColor = PromptColor;
+            Console.Write(": ");
+            Console.ResetColor();
+
+            string? input = Console.ReadLine();
+            
+            // Si l'utilisateur appuie sur Entrée sans rien taper, on retourne la valeur actuelle
+            return string.IsNullOrWhiteSpace(input) ? defaultValue : input;
+        }
     }
 }

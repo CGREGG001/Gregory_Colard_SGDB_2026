@@ -35,7 +35,11 @@ public static class ExceptionMessages
     public const string NationalRegisterRequired = "The National Register number is required for this role.";
     public const string NationalRegisterAlreadyExists = "This National Register number is already registered.";
 
-    // Vaccination
+    // Vaccinations
     public const string VaccineNameRequired = "The vaccine name is mandatory.";
     public const string InvalidVaccineDate = "The vaccination date cannot be in the future.";
+
+    // Compatibilities
+    public const string CompatibilityValueRequired = "A value (Yes/No/Not Tested) is required.";
+    public const string CompatibilityTypeRequired = "A target type (Cat, Dog, etc.) is required.";
 }

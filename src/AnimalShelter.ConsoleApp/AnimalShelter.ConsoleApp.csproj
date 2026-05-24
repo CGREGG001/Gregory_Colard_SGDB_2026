@@ -6,6 +6,10 @@
     <ProjectReference Include="..\AnimalShelter.Core\AnimalShelter.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="dotenv.net" Version="4.0.2" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>

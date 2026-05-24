@@ -1,0 +1,21 @@
+#!/bin/sh
+
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+NC="\033[0m"
+
+start=$(date +%s)
+
+echo -e "${YELLOW}🚀 Build + Tests avant push…${NC}"
+
+echo -e "${YELLOW}🔧 Build…${NC}"
+dotnet build --configuration Release || { echo -e "${RED}❌ Build failed${NC}"; exit 1; }
+
+echo -e "${YELLOW}🧪 Tests…${NC}"
+dotnet test --configuration Release || { echo -e "${RED}❌ Tests failed${NC}"; exit 1; }
+
+end=$(date +%s)
+duration=$((end - start))
+
+echo -e "${GREEN}✔ Push validé en ${duration}s${NC}"

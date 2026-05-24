@@ -11,8 +11,8 @@ namespace AnimalShelter.DAL.Infrastructure.Enums
             builder.MapEnum<SpeciesEnum>("species_enum");
             builder.MapEnum<SexEnum>("sex_enum");
             builder.MapEnum<AnimalStatusEnum>("animal_status_enum");
-            builder.MapEnum<CompatibilityTypeEnum>("compatibility_type_enum");
-            builder.MapEnum<CompatibilityValueEnum>("compatibility_value_enum");
+            builder.MapEnum<CompatibilityTypeEnum>("compat_type_enum");
+            builder.MapEnum<CompatibilityValueEnum>("compat_value_enum");
             builder.MapEnum<IntakeReasonEnum>("intake_reason_enum");
             builder.MapEnum<ExitReasonEnum>("exit_reason_enum");
             builder.MapEnum<AdoptionStatusEnum>("adoption_status_enum");

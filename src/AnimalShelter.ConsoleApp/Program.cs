@@ -17,11 +17,13 @@ var animalRepo = new AnimalRepository(dbFactory);
 var vaccinationRepo = new VaccinationRepository(dbFactory);
 var compatibilityRepo = new CompatibilityRepository(dbFactory);
 var contactRepo = new ContactRepository(dbFactory);
+var fosterRepo = new FosterRepository(dbFactory);
 
 // --- Services (Couche BLL) ---
 // Note: VaccinationService et CompatibilityService ont besoin de animalRepo.
 var vaccinationService = new VaccinationService(vaccinationRepo, animalRepo);
 var compatibilityService = new CompatibilityService(compatibilityRepo, animalRepo);
+var fosterService = new FosterService(fosterRepo, animalRepo);
 
 // AnimalService reste indépendant
 var animalService = new AnimalService(animalRepo);
@@ -33,6 +35,7 @@ var contactService = new ContactService(contactRepo);
 // L'UI Animal a besoin des trois services pour gérer les détails + les vaccins + les compatibilités
 var animalUI = new AnimalConsoleUI(animalService, vaccinationService, compatibilityService);
 var contactUI = new ContactConsoleUI(contactService);
+var fosterUI = new FosterConsoleUI(fosterService);
 
 // ---------------------------------------------------------
 // 2. SPLASH SCREEN (PawShelter Experience)
@@ -50,6 +53,7 @@ while (!exit)
     UIHelper.ShowTitleMenu("Animal Management");
     Console.WriteLine("1. Manage Animals");
     Console.WriteLine("2. Manage Contacts");
+    Console.WriteLine("3. Manage Foster Stays");
     Console.WriteLine("0. Exit");
 
     Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -65,6 +69,9 @@ while (!exit)
             break;
         case "2":
             await contactUI.ShowMenuAsync();
+            break;
+        case "3":
+            await fosterUI.ShowMenuAsync();
             break;
         case "0":
             exit = true;

@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql" Version="13.3.5" />
     <PackageReference Include="dotenv.net" Version="4.0.2" />
   </ItemGroup>
 

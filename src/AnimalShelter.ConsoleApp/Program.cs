@@ -8,28 +8,30 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 // ---------------------------------------------------------
 // 1. COMPOSITION ROOT (Infrastructure & Dependency Setup)
 // ---------------------------------------------------------
-// Infrastructure
+// --- Infrastructure ---
 var enumMapper = new EnumMapper();
 var dbFactory = new DbConnectionFactory(enumMapper);
 
-// Repositories (Couche DAL)
+// --- Repositories (Couche DAL) ---
 var animalRepo = new AnimalRepository(dbFactory);
 var vaccinationRepo = new VaccinationRepository(dbFactory);
+var compatibilityRepo = new CompatibilityRepository(dbFactory);
 var contactRepo = new ContactRepository(dbFactory);
 
-// Services (Couche BLL)
-// Note : VaccinationService a besoin de (vaccinationRepo, animalRepo)
+// --- Services (Couche BLL) ---
+// Note: VaccinationService et CompatibilityService ont besoin de animalRepo.
 var vaccinationService = new VaccinationService(vaccinationRepo, animalRepo);
+var compatibilityService = new CompatibilityService(compatibilityRepo, animalRepo);
 
-// AnimalService reste indépendant (comme tu l'as souhaité)
+// AnimalService reste indépendant
 var animalService = new AnimalService(animalRepo);
 
 // ContactService
 var contactService = new ContactService(contactRepo);
 
-// UI (Couche Présentation)
-// L'UI Animal a besoin des deux services pour gérer les détails + les vaccins
-var animalUI = new AnimalConsoleUI(animalService, vaccinationService);
+// --- UI (Couche Présentation) ---
+// L'UI Animal a besoin des trois services pour gérer les détails + les vaccins + les compatibilités
+var animalUI = new AnimalConsoleUI(animalService, vaccinationService, compatibilityService);
 var contactUI = new ContactConsoleUI(contactService);
 
 // ---------------------------------------------------------

@@ -12,14 +12,24 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 var enumMapper = new EnumMapper();
 var dbFactory = new DbConnectionFactory(enumMapper);
 
-// Animal Module
+// Repositories (Couche DAL)
 var animalRepo = new AnimalRepository(dbFactory);
-var animalService = new AnimalService(animalRepo);
-var animalUI = new AnimalConsoleUI(animalService);
-
-// Contact Module
+var vaccinationRepo = new VaccinationRepository(dbFactory);
 var contactRepo = new ContactRepository(dbFactory);
+
+// Services (Couche BLL)
+// Note : VaccinationService a besoin de (vaccinationRepo, animalRepo)
+var vaccinationService = new VaccinationService(vaccinationRepo, animalRepo);
+
+// AnimalService reste indépendant (comme tu l'as souhaité)
+var animalService = new AnimalService(animalRepo);
+
+// ContactService
 var contactService = new ContactService(contactRepo);
+
+// UI (Couche Présentation)
+// L'UI Animal a besoin des deux services pour gérer les détails + les vaccins
+var animalUI = new AnimalConsoleUI(animalService, vaccinationService);
 var contactUI = new ContactConsoleUI(contactService);
 
 // ---------------------------------------------------------

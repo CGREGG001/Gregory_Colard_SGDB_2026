@@ -42,4 +42,9 @@ public static class ExceptionMessages
     // Compatibilities
     public const string CompatibilityValueRequired = "A value (Yes/No/Not Tested) is required.";
     public const string CompatibilityTypeRequired = "A target type (Cat, Dog, etc.) is required.";
+
+    // Famille Accuielle
+    public const string FosterStartDateRequired = "The start date of the foster stay is mandatory.";
+    public const string FosterContactRequired = "A contact person (foster family) is mandatory.";
+    public const string AnimalAlreadyFostered = "This animal is already in a foster family.";
 }

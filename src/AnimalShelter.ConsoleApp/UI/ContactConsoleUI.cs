@@ -6,17 +6,13 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 
 namespace AnimalShelter.ConsoleApp.UI;
 
-public class ContactConsoleUI
+public class ContactConsoleUI(IContactService contactService)
 {
     #region fields
-    private readonly IContactService _contactService;
-    #endregion
+    private readonly IContactService _contactService = contactService;
 
+    #endregion
     #region constructors
-    public ContactConsoleUI(IContactService contactService)
-    {
-        _contactService = contactService;
-    }
     #endregion
 
     #region methods
@@ -43,7 +39,7 @@ public class ContactConsoleUI
 
             string? choice = Console.ReadLine();
 
-            switch(choice)
+            switch (choice)
             {
                 case "1": Console.Clear(); await ListContactsAsync(); break;
                 case "2": Console.Clear(); await RegisterContactAsync(); break;
@@ -88,10 +84,10 @@ public class ContactConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "ID", "Last Name", "First Name", "Roles" },
+            ["ID", "Last Name", "First Name", "Roles"],
             rows
         );
-    }       
+    }
 
     // ============================================================
     //  REGISTER CONTACT
@@ -126,9 +122,9 @@ public class ContactConsoleUI
                     Box = ConsoleHelper.GetString("Box (Optional)"),
                     PostCode = ConsoleHelper.GetRequiredString("Post Code"),
                     City = ConsoleHelper.GetRequiredString("City"),
-                    Country = ConsoleHelper.GetString("Country (Default: Belgium)") ?? "Belgium"
+                    Country = ConsoleHelper.GetString("Country (Default: Belgium)") ?? "Belgium",
                 };
-            };
+            }
 
             if (contact.RoleFlags.HasFlag(ContactRolesEnum.Adopter) || contact.RoleFlags.HasFlag(ContactRolesEnum.Volunteer))
             {
@@ -256,7 +252,7 @@ public class ContactConsoleUI
     // ============================================================
     //  ROLE SELECTION (BITMASK)
     // ============================================================
-    private ContactRolesEnum SelectRoles()
+    private static ContactRolesEnum SelectRoles()
     {
         ContactRolesEnum selected = ContactRolesEnum.None;
         bool done = false;

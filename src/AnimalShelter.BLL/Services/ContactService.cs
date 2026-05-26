@@ -9,14 +9,10 @@ using Npgsql;
 
 namespace AnimalShelter.BLL.Services
 {
-    public class ContactService : IContactService
+    public class ContactService(IContactRepository contactRepository) : IContactService
     {
-        private readonly IContactRepository _contactRepository;
+        private readonly IContactRepository _contactRepository = contactRepository;
 
-        public ContactService(IContactRepository contactRepository)
-        {
-            _contactRepository = contactRepository;
-        }
         public async Task<Guid> RegisterContactAsync(Contact contact, string? clearNationalRegister = null)
         {
             // 1. Si un registre national est fourni en clair, on le chiffre
@@ -84,13 +80,7 @@ namespace AnimalShelter.BLL.Services
 
         public async Task<bool> DeleteContactAsync(Guid id)
         {
-            Contact? existing = await _contactRepository.GetByIdAsync(id);
-
-            if (existing is null)
-            {
-                throw new ShelterException(ExceptionMessages.ContactNotFound, ErrorTypeEnum.NotFound);
-            }
-
+            Contact? existing = await _contactRepository.GetByIdAsync(id) ?? throw new ShelterException(ExceptionMessages.ContactNotFound, ErrorTypeEnum.NotFound);
             return await _contactRepository.DeleteAsync(id);
         }
     }

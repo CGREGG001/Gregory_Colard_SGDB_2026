@@ -6,16 +6,16 @@ using AnimalShelter.DAL.Mappers;
 
 namespace AnimalShelter.DAL.Repositories;
 
-public class FosterRepository : IFosterRepository
+public class FosterRepository(DbConnectionFactory db) : IFosterRepository
 {
-    private readonly DbConnectionFactory _db;
-    public FosterRepository(DbConnectionFactory db) => _db = db;
+    private readonly DbConnectionFactory _db = db;
 
     public async Task<Guid> AddAsync(FosterStay stay)
     {
         await using var conn = _db.CreateConnection();
         await conn.OpenAsync();
-        var id = await DbHelper.ExecuteScalarAsync<Guid>(conn, FosterQueries.Insert, cmd => {
+        var id = await DbHelper.ExecuteScalarAsync<Guid>(conn, FosterQueries.Insert, cmd =>
+        {
             cmd.Parameters.AddWithValue("id_animal", stay.AnimalId);
             cmd.Parameters.AddWithValue("id_person", stay.ContactId);
             cmd.Parameters.AddWithValue("start_date", stay.StartDate);
@@ -27,7 +27,7 @@ public class FosterRepository : IFosterRepository
     {
         await using var conn = _db.CreateConnection();
         await conn.OpenAsync();
-        return await DbHelper.QueryListAsync(conn, FosterQueries.GetByAnimal, 
+        return await DbHelper.QueryListAsync(conn, FosterQueries.GetByAnimal,
             cmd => cmd.Parameters.AddWithValue("id_animal", animalId), FosterMapper.Map);
     }
 
@@ -35,7 +35,7 @@ public class FosterRepository : IFosterRepository
     {
         await using var conn = _db.CreateConnection();
         await conn.OpenAsync();
-        return await DbHelper.QueryListAsync(conn, FosterQueries.GetByContact, 
+        return await DbHelper.QueryListAsync(conn, FosterQueries.GetByContact,
             cmd => cmd.Parameters.AddWithValue("id_person", contactId), FosterMapper.Map);
     }
 
@@ -43,7 +43,8 @@ public class FosterRepository : IFosterRepository
     {
         await using var conn = _db.CreateConnection();
         await conn.OpenAsync();
-        return await DbHelper.ExecuteNonQueryAsync(conn, FosterQueries.EndStay, cmd => {
+        return await DbHelper.ExecuteNonQueryAsync(conn, FosterQueries.EndStay, cmd =>
+        {
             cmd.Parameters.AddWithValue("id_foster", stayId);
             cmd.Parameters.AddWithValue("end_date", endDate);
         }) > 0;

@@ -7,14 +7,9 @@ using Npgsql;
 
 namespace AnimalShelter.DAL.Repositories;
 
-public class AnimalRepository : IAnimalRepository
+public class AnimalRepository(DbConnectionFactory connectionFactory) : IAnimalRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
-
-    public AnimalRepository(DbConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
+    private readonly DbConnectionFactory _connectionFactory = connectionFactory;
 
     public async Task<string> AddAsync(Animal animal)
     {

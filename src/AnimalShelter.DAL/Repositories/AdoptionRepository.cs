@@ -7,20 +7,26 @@ using AnimalShelter.DAL.Mappers;
 
 namespace AnimalShelter.DAL.Repositories;
 
-public class AdoptionRepository : IAdoptionRepository
+public class AdoptionRepository(DbConnectionFactory connectionFactory) : IAdoptionRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
-    public AdoptionRepository(DbConnectionFactory connectionFactory) => _connectionFactory = connectionFactory;
+    private readonly DbConnectionFactory _connectionFactory = connectionFactory;
 
     public async Task<Guid> AddAsync(AdoptionFile file)
     {
         await using var conn = _connectionFactory.CreateConnection();
+
         await conn.OpenAsync();
-        return await DbHelper.ExecuteScalarAsync<Guid>(conn, AdoptionQueries.Insert, cmd => {
-            cmd.Parameters.AddWithValue("id_animal", file.AnimalId);
-            cmd.Parameters.AddWithValue("id_person", file.ContactId);
-            cmd.Parameters.AddWithValue("status", file.Status);
-        });
+
+        return await DbHelper.ExecuteScalarAsync<Guid>(
+            conn,
+            AdoptionQueries.Insert,
+            cmd =>
+            {
+                cmd.Parameters.AddWithValue("id_animal", file.AnimalId);
+                cmd.Parameters.AddWithValue("id_person", file.ContactId);
+                cmd.Parameters.AddWithValue("status", file.Status);
+            }
+        );
     }
 
     public async Task<IEnumerable<AdoptionFile>> GetAllAsync()
@@ -38,7 +44,7 @@ public class AdoptionRepository : IAdoptionRepository
 
         await connection.OpenAsync();
 
-        return await DbHelper.QuerySingleAsync(connection, AdoptionQueries.GetById, 
+        return await DbHelper.QuerySingleAsync(connection, AdoptionQueries.GetById,
             cmd => cmd.Parameters.AddWithValue("id", id), AdoptionMapper.Map);
     }
 
@@ -48,7 +54,8 @@ public class AdoptionRepository : IAdoptionRepository
 
         await connection.OpenAsync();
 
-        return await DbHelper.ExecuteNonQueryAsync(connection, AdoptionQueries.UpdateStatus, cmd => {
+        return await DbHelper.ExecuteNonQueryAsync(connection, AdoptionQueries.UpdateStatus, cmd =>
+        {
             cmd.Parameters.AddWithValue("id", id);
             cmd.Parameters.AddWithValue("status", status);
         }) > 0;

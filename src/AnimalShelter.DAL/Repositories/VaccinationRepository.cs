@@ -7,14 +7,9 @@ using AnimalShelter.DAL.Mappers;
 
 namespace AnimalShelter.DAL.Repositories;
 
-public class VaccinationRepository : IVaccinationRepository
+public class VaccinationRepository(DbConnectionFactory connectionFactory) : IVaccinationRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
-
-    public VaccinationRepository(DbConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
+    private readonly DbConnectionFactory _connectionFactory = connectionFactory;
 
     private async Task<NpgsqlConnection> GetOpenConnectionAsync()
     {

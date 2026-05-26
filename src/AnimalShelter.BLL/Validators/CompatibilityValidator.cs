@@ -15,12 +15,12 @@ public static class CompatibilityValidator
         }
 
         // Les enums sont gérés par le ConsoleHelper, mais on valide par sécurité
-        if (!Enum.IsDefined(typeof(CompatibilityTypeEnum), compat.TargetType))
+        if (!Enum.IsDefined(compat.TargetType))
         {
             throw new ShelterException(ExceptionMessages.CompatibilityTypeRequired, ErrorTypeEnum.ValidationError);
         }
-            
-        if (!Enum.IsDefined(typeof(CompatibilityValueEnum), compat.ValueEnum))
+
+        if (!Enum.IsDefined(compat.ValueEnum))
         {
             throw new ShelterException(ExceptionMessages.CompatibilityValueRequired, ErrorTypeEnum.ValidationError);
         }

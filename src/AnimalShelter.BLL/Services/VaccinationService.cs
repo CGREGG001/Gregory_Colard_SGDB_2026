@@ -8,26 +8,15 @@ using Npgsql;
 
 namespace AnimalShelter.BLL.Services;
 
-public class VaccinationService : IVaccinationService
+public class VaccinationService(IVaccinationRepository vaccinationRepository, IAnimalRepository animalRepository) : IVaccinationService
 {
-    private readonly IVaccinationRepository _vaccinationRepository;
-    private readonly IAnimalRepository _animalRepository; // Nécessaire pour vérifier l'existence de l'animal
-
-    public VaccinationService(IVaccinationRepository vaccinationRepository, IAnimalRepository animalRepository)
-    {
-        _vaccinationRepository = vaccinationRepository;
-        _animalRepository = animalRepository;
-    }
+    private readonly IVaccinationRepository _vaccinationRepository = vaccinationRepository;
+    private readonly IAnimalRepository _animalRepository = animalRepository; // Nécessaire pour vérifier l'existence de l'animal
 
     public async Task<Guid> RegisterVaccinationAsync(Vaccination vaccination)
     {
         // 1. Vérifier si l'animal existe
-        var animal = await _animalRepository.GetByIdAsync(vaccination.AnimalId);
-
-        if (animal == null)
-        {
-            throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
-        }
+        var animal = await _animalRepository.GetByIdAsync(vaccination.AnimalId) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
 
         // 2. Validation métier
         VaccinationValidator.Validate(vaccination);
@@ -45,9 +34,7 @@ public class VaccinationService : IVaccinationService
     public async Task<IEnumerable<Vaccination>> GetAnimalVaccinationHistoryAsync(string animalId)
     {
         // On pourrait vérifier si l'animal existe ici aussi pour être très corporate
-        var animal = await _animalRepository.GetByIdAsync(animalId);
-        if (animal == null) throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
-
+        var animal = await _animalRepository.GetByIdAsync(animalId) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
         return await _vaccinationRepository.GetByAnimalIdAsync(animalId);
     }
 }

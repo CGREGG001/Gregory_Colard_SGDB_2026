@@ -6,21 +6,15 @@ using AnimalShelter.BLL.Validators;
 
 namespace AnimalShelter.BLL.Services;
 
-public class AdoptionService : IAdoptionService
+public class AdoptionService(IAdoptionRepository adoptionRepo, IAnimalRepository animalRepo) : IAdoptionService
 {
-    private readonly IAdoptionRepository _adoptionRepo;
-    private readonly IAnimalRepository _animalRepo;
-
-    public AdoptionService(IAdoptionRepository adoptionRepo, IAnimalRepository animalRepo)
-    {
-        _adoptionRepo = adoptionRepo;
-        _animalRepo = animalRepo;
-    }
+    private readonly IAdoptionRepository _adoptionRepo = adoptionRepo;
+    private readonly IAnimalRepository _animalRepo = animalRepo;
 
     public async Task<Guid> RequestAdoptionAsync(AdoptionFile file)
     {
         var animal = await _animalRepo.GetByIdAsync(file.AnimalId) ?? throw new ShelterException("Animal not found", ErrorTypeEnum.NotFound);
-        
+
         if (animal.CurrentStatus == AnimalStatusEnum.Adopted || animal.CurrentStatus == AnimalStatusEnum.Dead)
             throw new ShelterException("This animal is not available for adoption.", ErrorTypeEnum.Conflict);
 
@@ -34,7 +28,7 @@ public class AdoptionService : IAdoptionService
     public async Task<bool> ProcessAdoptionAsync(Guid id, AdoptionStatusEnum newStatus)
     {
         var file = await _adoptionRepo.GetByIdAsync(id) ?? throw new ShelterException("Adoption file not found", ErrorTypeEnum.NotFound);
-        
+
         bool success = await _adoptionRepo.UpdateStatusAsync(id, newStatus);
 
         if (success && newStatus == AdoptionStatusEnum.Approved)

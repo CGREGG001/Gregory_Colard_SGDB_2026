@@ -8,14 +8,9 @@ using Npgsql; // On ne l'utilise QUE pour le catch !
 
 namespace AnimalShelter.BLL.Services;
 
-public class AnimalService : IAnimalService
+public class AnimalService(IAnimalRepository animalRepository) : IAnimalService
 {
-    private readonly IAnimalRepository _animalRepository;
-
-    public AnimalService(IAnimalRepository animalRepository)
-    {
-        _animalRepository = animalRepository;
-    }
+    private readonly IAnimalRepository _animalRepository = animalRepository;
 
     public async Task<string> RegisterAnimalAsync(Animal animal)
     {
@@ -106,13 +101,7 @@ public class AnimalService : IAnimalService
 
     public async Task<bool> SoftDeleteAnimalAsync(string id)
     {
-        Animal? exists = await _animalRepository.GetByIdAsync(id);
-
-        if (exists is null)
-        {
-            throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
-        }
-
+        Animal? exists = await _animalRepository.GetByIdAsync(id) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
         return await _animalRepository.DeleteAsync(id);
     }
 }

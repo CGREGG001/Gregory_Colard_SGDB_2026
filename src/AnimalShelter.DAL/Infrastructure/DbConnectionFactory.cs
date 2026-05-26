@@ -33,7 +33,7 @@ public class DbConnectionFactory
         }
 
         // Chargement du fichier .env pour les variables de la DB
-        DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { envPath }));
+        DotEnv.Load(options: new DotEnvOptions(envFilePaths: [envPath]));
 
         var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "Localhost";
         var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";

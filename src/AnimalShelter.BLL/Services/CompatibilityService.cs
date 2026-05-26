@@ -7,20 +7,14 @@ using Npgsql;
 
 namespace AnimalShelter.BLL.Services;
 
-public class CompatibilityService : ICompatibilityService
+public class CompatibilityService(ICompatibilityRepository compRepo, IAnimalRepository animalRepo) : ICompatibilityService
 {
-    private readonly ICompatibilityRepository _compRepo;
-    private readonly IAnimalRepository _animalRepo;
-
-    public CompatibilityService(ICompatibilityRepository compRepo, IAnimalRepository animalRepo)
-    {
-        _compRepo = compRepo;
-        _animalRepo = animalRepo;
-    }
+    private readonly ICompatibilityRepository _compRepo = compRepo;
+    private readonly IAnimalRepository _animalRepo = animalRepo;
 
     public async Task SetCompatibilityAsync(Compatibility c)
     {
-        var animal = await _animalRepo.GetByIdAsync(c.AnimalId) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
+        _ = await _animalRepo.GetByIdAsync(c.AnimalId) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
         try { await _compRepo.SaveAsync(c); }
         catch (NpgsqlException ex) { throw new ShelterException(ExceptionMessages.DatabaseError, ErrorTypeEnum.DatabaseError, ex); }
     }

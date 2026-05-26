@@ -6,17 +6,13 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 
 namespace AnimalShelter.ConsoleApp.UI;
 
-public class AdoptionConsoleUI
+public class AdoptionConsoleUI(IAdoptionService adoptionService)
 {
     #region fields
-    private readonly IAdoptionService _adoptionService;
-    #endregion
+    private readonly IAdoptionService _adoptionService = adoptionService;
 
+    #endregion
     #region constructors
-    public AdoptionConsoleUI(IAdoptionService adoptionService)
-    {
-        _adoptionService = adoptionService;
-    }
     #endregion
 
     #region methods
@@ -38,7 +34,7 @@ public class AdoptionConsoleUI
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("\nSelection > ");
             Console.ResetColor();
-            
+
             string? choice = Console.ReadLine();
 
             switch (choice)
@@ -50,7 +46,8 @@ public class AdoptionConsoleUI
                 default: UIHelper.Warning("Invalid choice"); break;
             }
 
-            if (!exit){
+            if (!exit)
+            {
                 UIHelper.Pause();
             }
         }
@@ -83,7 +80,7 @@ public class AdoptionConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "ID", "Animal", "Candidate", "Status" },
+            ["ID", "Animal", "Candidate", "Status"],
             rows
         );
     }

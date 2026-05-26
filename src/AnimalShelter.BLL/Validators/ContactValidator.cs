@@ -7,7 +7,7 @@ using AnimalShelter.Core.Models;
 
 namespace AnimalShelter.BLL.Validators
 {
-    public static class ContactValidator
+    public static partial class ContactValidator
     {
         /// <summary>
         /// Ensures that contacts with specific roles (Adopter or Volunteer)
@@ -26,7 +26,7 @@ namespace AnimalShelter.BLL.Validators
                 throw new ShelterException(ExceptionMessages.ContactFirstNameRequired, ErrorTypeEnum.ValidationError);
 
             if (!string.IsNullOrWhiteSpace(contact.Email) &&
-                !Regex.IsMatch(contact.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                !MyRegex().IsMatch(contact.Email))
             {
                 throw new ShelterException(ExceptionMessages.InvalidEmail, ErrorTypeEnum.ValidationError);
             }
@@ -65,7 +65,7 @@ namespace AnimalShelter.BLL.Validators
                 return false;
 
             // Séparation : 6 chiffres date + 3 séquence + 2 checksum
-            string baseNumber = nr.Substring(0, 9);
+            string baseNumber = nr[..9];
             string checksumStr = nr.Substring(9, 2);
 
             if (!long.TryParse(baseNumber, out long baseVal) ||
@@ -83,5 +83,8 @@ namespace AnimalShelter.BLL.Validators
 
             return expected2 == checksum;
         }
+
+        [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+        private static partial Regex MyRegex();
     }
 }

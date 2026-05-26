@@ -7,7 +7,7 @@ public static class FosterMapper
 {
     public static FosterStay Map(NpgsqlDataReader reader)
     {
-        FosterStay stay = new FosterStay
+        FosterStay stay = new()
         {
             Id = reader.GetGuid(reader.GetOrdinal("id_foster")),
             AnimalId = reader.GetString(reader.GetOrdinal("id_animal")),
@@ -27,7 +27,7 @@ public static class FosterMapper
         // Mapping des colonnes de jointure (ContactName : Prénom + Nom)
         int firstNameOrdinal = reader.GetOrdinal("first_name");
         int lastNameOrdinal = reader.GetOrdinal("last_name");
-        
+
         if (!reader.IsDBNull(firstNameOrdinal) && !reader.IsDBNull(lastNameOrdinal))
         {
             stay.ContactName = $"{reader.GetString(firstNameOrdinal)} {reader.GetString(lastNameOrdinal)}";

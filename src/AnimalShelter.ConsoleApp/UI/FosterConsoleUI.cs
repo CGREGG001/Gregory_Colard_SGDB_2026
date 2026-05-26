@@ -4,17 +4,13 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 
 namespace AnimalShelter.ConsoleApp.UI;
 
-public class FosterConsoleUI
+public class FosterConsoleUI(IFosterService fosterService)
 {
     #region fields
-    private readonly IFosterService _fosterService;
-    #endregion
+    private readonly IFosterService _fosterService = fosterService;
 
+    #endregion
     #region constructors
-    public FosterConsoleUI(IFosterService fosterService)
-    {
-        _fosterService = fosterService;
-    }
     #endregion
 
     #region methods
@@ -84,7 +80,7 @@ public class FosterConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "Start", "End", "Family" },
+            ["Start", "End", "Family"],
             rows
         );
     }
@@ -115,7 +111,7 @@ public class FosterConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "Animal", "Since" },
+            ["Animal", "Since"],
             rows
         );
     }

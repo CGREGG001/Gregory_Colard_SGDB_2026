@@ -87,10 +87,10 @@ public static class UIHelper
         DrawBox(title);
         Console.ResetColor();
     }
-    
+
     public static void DrawBox(string title)
     {
-        string line = new string('═', title.Length + 6);
+        string line = new('═', title.Length + 6);
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine($"╔{line}╗");
         Console.WriteLine($"║   {title.ToUpper()}   ║");
@@ -109,7 +109,7 @@ public static class UIHelper
             // Détection et application instantanée des codes ANSI (ex: \u001b[31;1m)
             if (line[i] == '\u001b')
             {
-                StringBuilder ansiCode = new StringBuilder();
+                StringBuilder ansiCode = new();
                 while (i < line.Length && line[i] != 'm')
                 {
                     ansiCode.Append(line[i]);

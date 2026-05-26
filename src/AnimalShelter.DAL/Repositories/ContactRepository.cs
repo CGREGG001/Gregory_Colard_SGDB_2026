@@ -7,14 +7,9 @@ using Npgsql;
 
 namespace AnimalShelter.DAL.Repositories
 {
-    public class ContactRepository : IContactRepository
+    public class ContactRepository(DbConnectionFactory connectionFactory) : IContactRepository
     {
-        private readonly DbConnectionFactory _connectionFactory;
-
-        public ContactRepository(DbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
+        private readonly DbConnectionFactory _connectionFactory = connectionFactory;
 
         public async Task<Guid> AddAsync(Contact contact)
         {
@@ -92,7 +87,7 @@ namespace AnimalShelter.DAL.Repositories
 
         public async Task<IEnumerable<Contact>> GetAllAsync()
         {
-            List<Contact> contacts = new List<Contact>();
+            List<Contact> contacts = [];
             await using var connection = await GetOpenConnectionAsync();
 
             await using var cmd = new NpgsqlCommand(ContactQueries.GetAll, connection);

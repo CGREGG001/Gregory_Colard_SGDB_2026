@@ -98,7 +98,7 @@ namespace AnimalShelter.ConsoleApp.UI.Utilities
             Console.ResetColor();
 
             string? input = Console.ReadLine();
-            
+
             // Si l'utilisateur appuie sur Entrée sans rien taper, on retourne la valeur actuelle
             return string.IsNullOrWhiteSpace(input) ? defaultValue : input;
         }

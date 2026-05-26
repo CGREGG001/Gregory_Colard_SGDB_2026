@@ -7,10 +7,9 @@ using AnimalShelter.DAL.Mappers;
 
 namespace AnimalShelter.DAL.Repositories;
 
-public class CompatibilityRepository : ICompatibilityRepository
+public class CompatibilityRepository(DbConnectionFactory factory) : ICompatibilityRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
-    public CompatibilityRepository(DbConnectionFactory factory) => _connectionFactory = factory;
+    private readonly DbConnectionFactory _connectionFactory = factory;
 
     public async Task SaveAsync(Compatibility c)
     {
@@ -18,7 +17,8 @@ public class CompatibilityRepository : ICompatibilityRepository
 
         await connection.OpenAsync();
 
-        await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.Upsert, cmd => {
+        await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.Upsert, cmd =>
+        {
             cmd.Parameters.AddWithValue("id_animal", c.AnimalId);
             cmd.Parameters.AddWithValue("type", c.TargetType);
             cmd.Parameters.AddWithValue("value", c.ValueEnum);
@@ -43,7 +43,8 @@ public class CompatibilityRepository : ICompatibilityRepository
 
         await connection.OpenAsync();
 
-        return await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.SoftDelete, cmd => {
+        return await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.SoftDelete, cmd =>
+        {
             cmd.Parameters.AddWithValue("id_animal", animalId);
             cmd.Parameters.AddWithValue("type", type);
         }) > 0;

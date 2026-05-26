@@ -89,7 +89,7 @@ CREATE TABLE contacts (
     is_anonymised BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMPTZ
+    deleted_at TIMESTAMPTZ,
     CONSTRAINT uq_contacts_national_register_hash UNIQUE (national_register_hash)
 );
 

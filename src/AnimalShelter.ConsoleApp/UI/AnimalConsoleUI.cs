@@ -6,24 +6,18 @@ using AnimalShelter.ConsoleApp.UI.Utilities;
 
 namespace AnimalShelter.ConsoleApp.UI;
 
-public class AnimalConsoleUI
+public class AnimalConsoleUI(
+    IAnimalService animalService,
+    IVaccinationService vaccinationService,
+    ICompatibilityService compatService)
 {
     #region fields
-    private readonly IAnimalService _animalService;
-    private readonly IVaccinationService _vaccinationService;
-    private readonly ICompatibilityService _compatService;
-    #endregion
+    private readonly IAnimalService _animalService = animalService;
+    private readonly IVaccinationService _vaccinationService = vaccinationService;
+    private readonly ICompatibilityService _compatService = compatService;
 
+    #endregion
     #region constructors
-    public AnimalConsoleUI(
-        IAnimalService animalService,
-        IVaccinationService vaccinationService,
-        ICompatibilityService compatService)
-    {
-        _animalService = animalService;
-        _vaccinationService = vaccinationService;
-        _compatService = compatService;
-    }
     #endregion
 
     #region methods
@@ -97,7 +91,7 @@ public class AnimalConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "ID", "Name", "Species", "Status" },
+            ["ID", "Name", "Species", "Status"],
             rows
         );
     }
@@ -189,7 +183,7 @@ public class AnimalConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "Date", "Vaccine", "Status" },
+            ["Date", "Vaccine", "Status"],
             rows
         );
     }
@@ -218,7 +212,7 @@ public class AnimalConsoleUI
             .ToList();
 
         UIHelper.ShowTable(
-            new[] { "Type", "Value", "Description" },
+            ["Type", "Value", "Description"],
             rows
         );
     }

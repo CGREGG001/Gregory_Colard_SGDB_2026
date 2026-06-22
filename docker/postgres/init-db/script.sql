@@ -199,3 +199,469 @@ SELECT
     (SELECT intake_date FROM intake_histories WHERE id_animal = a.id_animal ORDER BY intake_date DESC LIMIT 1) as last_entry_date
 FROM animals a
 WHERE a.deleted_at IS NULL;
+
+/*
+ * ANIMAL SHELTER DATABASE - PHASE 2
+ * Stored Procedures
+ */
+-- ANIMALS
+
+CREATE OR REPLACE FUNCTION sp_animal_insert(
+    p_name            VARCHAR,
+    p_species         species_enum,
+    p_sex             sex_enum,
+    p_colors          VARCHAR,
+    p_is_sterilised   BOOLEAN,
+    p_sterilisation_date DATE,
+    p_birth_date      DATE,
+    p_description     TEXT,
+    p_particularities TEXT
+) RETURNS VARCHAR AS $$
+DECLARE
+    v_id VARCHAR(11);
+BEGIN
+    INSERT INTO animals (name, species, sex, colors, is_sterilised, sterilisation_date, birth_date, description, particularities)
+    VALUES (p_name, p_species, p_sex, p_colors, p_is_sterilised, p_sterilisation_date, p_birth_date, p_description, p_particularities)
+    RETURNING id_animal INTO v_id;
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_animal_get_by_id(p_id VARCHAR)
+RETURNS SETOF animals AS $$
+    SELECT * FROM animals WHERE id_animal = p_id AND deleted_at IS NULL;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_animal_get_all_active()
+RETURNS SETOF animals AS $$
+    SELECT * FROM animals WHERE deleted_at IS NULL ORDER BY created_at DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_animal_update(
+    p_id              VARCHAR,
+    p_name            VARCHAR,
+    p_colors          VARCHAR,
+    p_description     TEXT,
+    p_particularities TEXT,
+    p_status          animal_status_enum
+) RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE animals SET
+        name              = p_name,
+        colors            = p_colors,
+        description       = p_description,
+        particularities   = p_particularities,
+        current_status    = p_status
+    WHERE id_animal = p_id;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_animal_soft_delete(p_id VARCHAR)
+RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE animals SET deleted_at = CURRENT_TIMESTAMP WHERE id_animal = p_id;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ADDRESSES
+
+CREATE OR REPLACE FUNCTION sp_address_get_by_id(p_id UUID)
+RETURNS SETOF addresses AS $$
+    SELECT * FROM addresses WHERE id_address = p_id AND deleted_at IS NULL;
+$$ LANGUAGE sql STABLE;
+
+-- CONTACTS
+-- (adresse + contact gérés ensemble dans une seule procédure)
+CREATE OR REPLACE FUNCTION sp_contact_register(
+    p_street       VARCHAR,
+    p_number       VARCHAR,
+    p_box          VARCHAR,
+    p_post_code    VARCHAR,
+    p_city         VARCHAR,
+    p_country      VARCHAR,
+    p_last_name    VARCHAR,
+    p_first_name   VARCHAR,
+    p_nr_encrypted BYTEA,
+    p_nr_hash      BYTEA,
+    p_gsm          VARCHAR,
+    p_phone        VARCHAR,
+    p_email        VARCHAR,
+    p_role_flags   SMALLINT,
+    p_rgpd_date    TIMESTAMPTZ
+) RETURNS UUID AS $$
+DECLARE
+    v_address_id UUID := NULL;
+    v_contact_id UUID;
+BEGIN
+    IF p_street IS NOT NULL THEN
+        INSERT INTO addresses (street, number, box, post_code, city, country)
+        VALUES (p_street, p_number, p_box, p_post_code, p_city, p_country)
+        RETURNING id_address INTO v_address_id;
+    END IF;
+
+    INSERT INTO contacts (id_address, last_name, first_name, national_register_encrypted, national_register_hash, gsm, phone, email, role_flags, rgpd_consent_date)
+    VALUES (v_address_id, p_last_name, p_first_name, p_nr_encrypted, p_nr_hash, p_gsm, p_phone, p_email, p_role_flags, p_rgpd_date)
+    RETURNING id_person INTO v_contact_id;
+
+    RETURN v_contact_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_contact_get_by_id(p_id UUID)
+RETURNS SETOF contacts AS $$
+    SELECT * FROM contacts WHERE id_person = p_id AND deleted_at IS NULL;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_contact_get_all()
+RETURNS SETOF contacts AS $$
+    SELECT * FROM contacts WHERE deleted_at IS NULL ORDER BY last_name, first_name;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_contact_update_full(
+    p_contact_id UUID,
+    p_last_name  VARCHAR,
+    p_first_name VARCHAR,
+    p_gsm        VARCHAR,
+    p_phone      VARCHAR,
+    p_email      VARCHAR,
+    p_role_flags SMALLINT,
+    p_id_address UUID,
+    p_street     VARCHAR,
+    p_number     VARCHAR,
+    p_box        VARCHAR,
+    p_post_code  VARCHAR,
+    p_city       VARCHAR,
+    p_country    VARCHAR
+) RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    IF p_id_address IS NOT NULL THEN
+        UPDATE addresses SET
+            street    = p_street,
+            number    = p_number,
+            box       = p_box,
+            post_code = p_post_code,
+            city      = p_city,
+            country   = p_country
+        WHERE id_address = p_id_address;
+    END IF;
+
+    UPDATE contacts SET
+        last_name  = p_last_name,
+        first_name = p_first_name,
+        gsm        = p_gsm,
+        phone      = p_phone,
+        email      = p_email,
+        role_flags = p_role_flags
+    WHERE id_person = p_contact_id;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_contact_soft_delete(p_id UUID)
+RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE contacts SET deleted_at = CURRENT_TIMESTAMP WHERE id_person = p_id;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+-- VACCINATIONS
+CREATE OR REPLACE FUNCTION sp_vaccination_insert(
+    p_id_animal VARCHAR,
+    p_name      VARCHAR,
+    p_date      DATE,
+    p_is_done   BOOLEAN
+) RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO vaccinations (id_animal, vaccine_name, vaccine_date, is_done)
+    VALUES (p_id_animal, p_name, p_date, p_is_done)
+    RETURNING id_vaccin INTO v_id;
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_vaccination_get_by_animal(p_id_animal VARCHAR)
+RETURNS SETOF vaccinations AS $$
+    SELECT * FROM vaccinations
+    WHERE id_animal = p_id_animal AND deleted_at IS NULL
+    ORDER BY vaccine_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_vaccination_update(
+    p_id      UUID,
+    p_name    VARCHAR,
+    p_date    DATE,
+    p_is_done BOOLEAN
+) RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE vaccinations SET
+        vaccine_name = p_name,
+        vaccine_date = p_date,
+        is_done      = p_is_done,
+        updated_at   = NOW()
+    WHERE id_vaccin = p_id AND deleted_at IS NULL;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_vaccination_soft_delete(p_id UUID)
+RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE vaccinations SET deleted_at = NOW(), updated_at = NOW()
+    WHERE id_vaccin = p_id AND deleted_at IS NULL;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+-- COMPATIBILITIES
+CREATE OR REPLACE FUNCTION sp_compatibility_upsert(
+    p_id_animal VARCHAR,
+    p_type      compat_type_enum,
+    p_value     compat_value_enum,
+    p_desc      TEXT
+) RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    INSERT INTO compatibilities (id_animal, target_type, value, description)
+    VALUES (p_id_animal, p_type, p_value, p_desc)
+    ON CONFLICT (id_animal, target_type)
+    DO UPDATE SET value = p_value, description = p_desc, deleted_at = NULL;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_compatibility_get_by_animal(p_id_animal VARCHAR)
+RETURNS SETOF compatibilities AS $$
+    SELECT * FROM compatibilities WHERE id_animal = p_id_animal AND deleted_at IS NULL;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_compatibility_soft_delete(
+    p_id_animal VARCHAR,
+    p_type      compat_type_enum
+) RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE compatibilities SET deleted_at = CURRENT_TIMESTAMP
+    WHERE id_animal = p_id_animal AND target_type = p_type;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+-- FOSTER STAYS
+CREATE OR REPLACE FUNCTION sp_foster_insert(
+    p_id_animal VARCHAR,
+    p_id_person UUID,
+    p_start_date DATE
+) RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO foster_stays (id_animal, id_person, start_date)
+    VALUES (p_id_animal, p_id_person, p_start_date)
+    RETURNING id_foster INTO v_id;
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_foster_get_by_animal(p_id_animal VARCHAR)
+RETURNS TABLE(
+    id_foster   UUID,
+    id_animal   VARCHAR,
+    id_person   UUID,
+    start_date  DATE,
+    end_date    DATE,
+    animal_name VARCHAR,
+    first_name  VARCHAR,
+    last_name   VARCHAR
+) AS $$
+    SELECT f.id_foster, f.id_animal, f.id_person, f.start_date, f.end_date,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM foster_stays f
+    JOIN animals  a ON f.id_animal = a.id_animal
+    JOIN contacts c ON f.id_person = c.id_person
+    WHERE f.id_animal = p_id_animal
+    ORDER BY f.start_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_foster_get_active_by_contact(p_id_person UUID)
+RETURNS TABLE(
+    id_foster   UUID,
+    id_animal   VARCHAR,
+    id_person   UUID,
+    start_date  DATE,
+    end_date    DATE,
+    animal_name VARCHAR,
+    first_name  VARCHAR,
+    last_name   VARCHAR
+) AS $$
+    SELECT f.id_foster, f.id_animal, f.id_person, f.start_date, f.end_date,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM foster_stays f
+    JOIN animals  a ON f.id_animal = a.id_animal
+    JOIN contacts c ON f.id_person = c.id_person
+    WHERE f.id_person = p_id_person AND f.end_date IS NULL
+    ORDER BY f.start_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_foster_get_history_by_contact(p_id_person UUID)
+RETURNS TABLE(
+    id_foster   UUID,
+    id_animal   VARCHAR,
+    id_person   UUID,
+    start_date  DATE,
+    end_date    DATE,
+    animal_name VARCHAR,
+    first_name  VARCHAR,
+    last_name   VARCHAR
+) AS $$
+    SELECT f.id_foster, f.id_animal, f.id_person, f.start_date, f.end_date,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM foster_stays f
+    JOIN animals  a ON f.id_animal = a.id_animal
+    JOIN contacts c ON f.id_person = c.id_person
+    WHERE f.id_person = p_id_person
+    ORDER BY f.start_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_foster_end_stay(p_id_foster UUID, p_end_date DATE)
+RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE foster_stays SET end_date = p_end_date WHERE id_foster = p_id_foster;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ADOPTION FILES
+CREATE OR REPLACE FUNCTION sp_adoption_insert(
+    p_id_animal VARCHAR,
+    p_id_person UUID,
+    p_status    adoption_status_enum
+) RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO adoption_files (id_animal, id_person, status)
+    VALUES (p_id_animal, p_id_person, p_status)
+    RETURNING id_adoption INTO v_id;
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_adoption_get_all()
+RETURNS TABLE(
+    id_adoption  UUID,
+    id_animal    VARCHAR,
+    id_person    UUID,
+    request_date TIMESTAMPTZ,
+    status       adoption_status_enum,
+    animal_name  VARCHAR,
+    first_name   VARCHAR,
+    last_name    VARCHAR
+) AS $$
+    SELECT ad.id_adoption, ad.id_animal, ad.id_person, ad.request_date, ad.status,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM adoption_files ad
+    JOIN animals  a ON ad.id_animal = a.id_animal
+    JOIN contacts c ON ad.id_person = c.id_person
+    WHERE ad.deleted_at IS NULL
+    ORDER BY ad.request_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_adoption_get_by_id(p_id UUID)
+RETURNS TABLE(
+    id_adoption  UUID,
+    id_animal    VARCHAR,
+    id_person    UUID,
+    request_date TIMESTAMPTZ,
+    status       adoption_status_enum,
+    animal_name  VARCHAR,
+    first_name   VARCHAR,
+    last_name    VARCHAR
+) AS $$
+    SELECT ad.id_adoption, ad.id_animal, ad.id_person, ad.request_date, ad.status,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM adoption_files ad
+    JOIN animals  a ON ad.id_animal = a.id_animal
+    JOIN contacts c ON ad.id_person = c.id_person
+    WHERE ad.id_adoption = p_id;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_adoption_get_by_animal(p_id_animal VARCHAR)
+RETURNS TABLE(
+    id_adoption  UUID,
+    id_animal    VARCHAR,
+    id_person    UUID,
+    request_date TIMESTAMPTZ,
+    status       adoption_status_enum,
+    animal_name  VARCHAR,
+    first_name   VARCHAR,
+    last_name    VARCHAR
+) AS $$
+    SELECT ad.id_adoption, ad.id_animal, ad.id_person, ad.request_date, ad.status,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM adoption_files ad
+    JOIN animals  a ON ad.id_animal = a.id_animal
+    JOIN contacts c ON ad.id_person = c.id_person
+    WHERE ad.id_animal = p_id_animal AND ad.deleted_at IS NULL
+    ORDER BY ad.request_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_adoption_get_by_contact(p_id_person UUID)
+RETURNS TABLE(
+    id_adoption  UUID,
+    id_animal    VARCHAR,
+    id_person    UUID,
+    request_date TIMESTAMPTZ,
+    status       adoption_status_enum,
+    animal_name  VARCHAR,
+    first_name   VARCHAR,
+    last_name    VARCHAR
+) AS $$
+    SELECT ad.id_adoption, ad.id_animal, ad.id_person, ad.request_date, ad.status,
+           a.name AS animal_name, c.first_name, c.last_name
+    FROM adoption_files ad
+    JOIN animals  a ON ad.id_animal = a.id_animal
+    JOIN contacts c ON ad.id_person = c.id_person
+    WHERE ad.id_person = p_id_person AND ad.deleted_at IS NULL
+    ORDER BY ad.request_date DESC;
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION sp_adoption_update_status(p_id UUID, p_status adoption_status_enum)
+RETURNS INTEGER AS $$
+DECLARE
+    v_rows INTEGER;
+BEGIN
+    UPDATE adoption_files SET status = p_status WHERE id_adoption = p_id;
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    RETURN v_rows;
+END;
+$$ LANGUAGE plpgsql;

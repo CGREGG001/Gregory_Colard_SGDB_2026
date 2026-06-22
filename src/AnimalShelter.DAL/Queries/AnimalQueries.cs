@@ -2,57 +2,19 @@ namespace AnimalShelter.DAL.Queries
 {
     public class AnimalQueries
     {
-        public const string Insert = @"
-            INSERT INTO animals 
-                (name,
-                species,
-                sex,
-                colors,
-                is_sterilised,
-                sterilisation_date,
-                birth_date,
-                description,
-                particularities)
-            VALUES 
-                (@name,
-                @species,
-                @sex,
-                @colors,
-                @is_sterilised,
-                @sterilisation_date,
-                @birth_date,
-                @description,
-                @particularities)
-            RETURNING id_animal;
-        ";
+        public const string Insert = @"SELECT sp_animal_insert(
+            @name, @species, @sex, @colors, @is_sterilised, @sterilisation_date::date,
+            @birth_date::date, @description, @particularities
+        )";
 
-        public const string GetById = @"
-            SELECT *
-            FROM animals
-            WHERE id_animal = @id AND deleted_at IS NULL;
-        ";
+        public const string GetById = "SELECT * FROM sp_animal_get_by_id(@id)";
 
-        public const string GetAllActive = @"
-            SELECT *
-            FROM animals
-            WHERE deleted_at IS NULL 
-            ORDER BY created_at DESC;
-        ";
+        public const string GetAllActive = "SELECT * FROM sp_animal_get_all_active()";
 
-        public const string Update = @"
-            UPDATE animals SET 
-                name = @name,
-                colors = @colors,
-                description = @description,
-                particularities = @particularities,
-                current_status = @status
-            WHERE id_animal = @id;
-        ";
+        public const string Update = @"SELECT sp_animal_update(@id, @name, @colors, 
+            @description, @particularities, @status
+        )";
 
-        public const string SoftDelete = @"
-            UPDATE animals SET
-                deleted_at = CURRENT_TIMESTAMP
-            WHERE id_animal = @id;
-        ";
+        public const string SoftDelete = "SELECT sp_animal_soft_delete(@id)";
     }
 }

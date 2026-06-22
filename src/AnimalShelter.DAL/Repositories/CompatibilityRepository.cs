@@ -4,7 +4,6 @@ using AnimalShelter.Core.Enums;
 using AnimalShelter.DAL.Infrastructure;
 using AnimalShelter.DAL.Queries;
 using AnimalShelter.DAL.Mappers;
-using System.Data;
 
 namespace AnimalShelter.DAL.Repositories;
 
@@ -18,7 +17,7 @@ public class CompatibilityRepository(DbConnectionFactory factory) : ICompatibili
 
         await connection.OpenAsync();
 
-        await DbHelper.ExecuteScalarAsync<int>(connection, CompatibilityQueries.Upsert, cmd =>
+        await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.Upsert, cmd =>
         {
             cmd.Parameters.AddWithValue("id_animal", c.AnimalId);
             cmd.Parameters.AddWithValue("type", c.TargetType);
@@ -44,12 +43,10 @@ public class CompatibilityRepository(DbConnectionFactory factory) : ICompatibili
 
         await connection.OpenAsync();
 
-        var rows = await DbHelper.ExecuteScalarAsync<int>(connection, CompatibilityQueries.SoftDelete, cmd =>
+        return await DbHelper.ExecuteNonQueryAsync(connection, CompatibilityQueries.SoftDelete, cmd =>
         {
             cmd.Parameters.AddWithValue("id_animal", animalId);
             cmd.Parameters.AddWithValue("type", type);
-        });
-
-        return rows > 0;
+        }) > 0;
     }
 }

@@ -38,27 +38,10 @@ public class AdoptionRepository(DbConnectionFactory connectionFactory) : IAdopti
         return await DbHelper.QueryListAsync(connection, AdoptionQueries.GetAll, null, AdoptionMapper.Map);
     }
 
-    public async Task<IEnumerable<AdoptionFile>> GetByAnimalIdAsync(string animalId)
-    {
-        await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        return await DbHelper.QueryListAsync(connection, AdoptionQueries.GetByAnimal,
-            cmd => cmd.Parameters.AddWithValue("id_animal", animalId), AdoptionMapper.Map);
-    }
-
-    public async Task<IEnumerable<AdoptionFile>> GetByContactIdAsync(Guid contactId)
-    {
-        await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        return await DbHelper.QueryListAsync(connection, AdoptionQueries.GetByContact,
-            cmd => cmd.Parameters.AddWithValue("id_person", contactId), AdoptionMapper.Map);
-    }
-
     public async Task<AdoptionFile?> GetByIdAsync(Guid id)
     {
         await using var connection = _connectionFactory.CreateConnection();
+
         await connection.OpenAsync();
 
         return await DbHelper.QuerySingleAsync(connection, AdoptionQueries.GetById,
@@ -71,12 +54,10 @@ public class AdoptionRepository(DbConnectionFactory connectionFactory) : IAdopti
 
         await connection.OpenAsync();
 
-        var rows = await DbHelper.ExecuteScalarAsync<int>(connection, AdoptionQueries.UpdateStatus, cmd =>
+        return await DbHelper.ExecuteNonQueryAsync(connection, AdoptionQueries.UpdateStatus, cmd =>
         {
-            cmd.Parameters.AddWithValue("id",     id);
+            cmd.Parameters.AddWithValue("id", id);
             cmd.Parameters.AddWithValue("status", status);
-        });
-
-        return rows > 0;
+        }) > 0;
     }
 }

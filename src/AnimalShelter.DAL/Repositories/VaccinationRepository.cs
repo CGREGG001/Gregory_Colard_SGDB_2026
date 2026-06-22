@@ -22,7 +22,7 @@ public class VaccinationRepository(DbConnectionFactory connectionFactory) : IVac
     {
         await using var connection = await GetOpenConnectionAsync();
 
-        return await DbHelper.ExecuteScalarAsync<Guid>(
+        var result = await DbHelper.ExecuteScalarAsync<Guid>(
             connection,
             VaccinationQueries.Insert,
             cmd =>
@@ -32,6 +32,8 @@ public class VaccinationRepository(DbConnectionFactory connectionFactory) : IVac
             cmd.Parameters.AddWithValue("date", v.VaccineDate);
             cmd.Parameters.AddWithValue("is_done", v.IsDone);
         });
+
+        return result;
     }
 
     public async Task<IEnumerable<Vaccination>> GetByAnimalIdAsync(string animalId)
@@ -44,35 +46,5 @@ public class VaccinationRepository(DbConnectionFactory connectionFactory) : IVac
             cmd => cmd.Parameters.AddWithValue("id_animal", animalId),
             VaccinationMapper.Map
         );
-    }
-
-    public async Task<bool> UpdateAsync(Vaccination v)
-    {
-        await using var connection = await GetOpenConnectionAsync();
-
-        var rows = await DbHelper.ExecuteScalarAsync<int>(
-            connection,
-            VaccinationQueries.Update,
-            cmd =>
-            {
-                cmd.Parameters.AddWithValue("id",      v.Id);
-                cmd.Parameters.AddWithValue("name",    v.VaccineName);
-                cmd.Parameters.AddWithValue("date",    v.VaccineDate);
-                cmd.Parameters.AddWithValue("is_done", v.IsDone);
-            });
-
-        return rows > 0;
-    }
-
-    public async Task<bool> DeleteAsync(Guid id)
-    {
-        await using var connection = await GetOpenConnectionAsync();
-
-        var rows = await DbHelper.ExecuteScalarAsync<int>(
-            connection,
-            VaccinationQueries.SoftDelete,
-            cmd => cmd.Parameters.AddWithValue("id", id));
-
-        return rows > 0;
     }
 }

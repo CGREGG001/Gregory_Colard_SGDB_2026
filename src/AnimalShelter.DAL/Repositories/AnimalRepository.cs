@@ -67,7 +67,7 @@ public class AnimalRepository(DbConnectionFactory connectionFactory) : IAnimalRe
         const string query = AnimalQueries.Update;
         await using var connection = await GetOpenConnectionAsync();
 
-        var rows = await DbHelper.ExecuteScalarAsync<int>(
+        var rows = await DbHelper.ExecuteNonQueryAsync(
             connection,
             query,
             cmd =>
@@ -89,7 +89,7 @@ public class AnimalRepository(DbConnectionFactory connectionFactory) : IAnimalRe
         const string query = AnimalQueries.SoftDelete;
         await using var connection = await GetOpenConnectionAsync();
 
-        var rows = await DbHelper.ExecuteScalarAsync<int>(
+        var rows = await DbHelper.ExecuteNonQueryAsync(
             connection,
             query,
             cmd => cmd.Parameters.AddWithValue("id", id)

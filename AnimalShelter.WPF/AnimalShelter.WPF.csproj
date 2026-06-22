@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\AnimalShelter.BLL\AnimalShelter.BLL.csproj" />
+    <ProjectReference Include="..\src\AnimalShelter.Core\AnimalShelter.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="Mappers\" />
+    <Folder Include="Pages\" />
+    <Folder Include="ViewModels\" />
+  </ItemGroup>
+
+</Project>

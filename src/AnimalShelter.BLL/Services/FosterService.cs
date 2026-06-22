@@ -42,4 +42,9 @@ public class FosterService(IFosterRepository fosterRepo, IAnimalRepository anima
     {
         return await _fosterRepo.GetStaysByContactIdAsync(contactId);
     }
+
+    public async Task<IEnumerable<FosterStay>> GetFamilyFosterHistoryAsync(Guid contactId)
+    {
+        return await _fosterRepo.GetHistoryByContactIdAsync(contactId);
+    }
 }

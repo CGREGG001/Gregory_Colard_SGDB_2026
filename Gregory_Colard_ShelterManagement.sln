@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.2.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11911.148 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimalShelter.Tests", "tests\AnimalShelter.Tests\AnimalShelter.Tests.csproj", "{7EFE38FA-1231-4F87-8FC0-277623551933}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimalShelter.WPF", "AnimalShelter.WPF\AnimalShelter.WPF.csproj", "{5F2CD74F-257F-4223-BEEF-BA5AE494253D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +89,18 @@ Global
 		{7EFE38FA-1231-4F87-8FC0-277623551933}.Release|x64.Build.0 = Release|Any CPU
 		{7EFE38FA-1231-4F87-8FC0-277623551933}.Release|x86.ActiveCfg = Release|Any CPU
 		{7EFE38FA-1231-4F87-8FC0-277623551933}.Release|x86.Build.0 = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|x64.Build.0 = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Debug|x86.Build.0 = Debug|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|x64.ActiveCfg = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|x64.Build.0 = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +111,7 @@ Global
 		{38F8C242-00F9-428A-82B1-046B0EFB0542} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{5DDE4E5C-E508-4839-898C-87F13B70769F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{7EFE38FA-1231-4F87-8FC0-277623551933} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{5F2CD74F-257F-4223-BEEF-BA5AE494253D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F9BAC77C-03EE-43E2-8246-8B505BA5BD06}

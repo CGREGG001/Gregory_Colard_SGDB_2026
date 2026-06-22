@@ -9,4 +9,7 @@ public interface IAdoptionRepository
     Task<IEnumerable<AdoptionFile>> GetAllAsync();
     Task<AdoptionFile?> GetByIdAsync(Guid id);
     Task<bool> UpdateStatusAsync(Guid id, AdoptionStatusEnum status);
+
+    Task<IEnumerable<AdoptionFile>> GetByAnimalIdAsync(string animalId);
+    Task<IEnumerable<AdoptionFile>> GetByContactIdAsync(Guid contactId);
 }

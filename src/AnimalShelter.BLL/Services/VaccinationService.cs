@@ -37,4 +37,29 @@ public class VaccinationService(IVaccinationRepository vaccinationRepository, IA
         var animal = await _animalRepository.GetByIdAsync(animalId) ?? throw new ShelterException(ExceptionMessages.AnimalNotFound, ErrorTypeEnum.NotFound);
         return await _vaccinationRepository.GetByAnimalIdAsync(animalId);
     }
+    public async Task<bool> DeleteVaccinationAsync(Guid id)
+    {
+        try
+        {
+            return await _vaccinationRepository.DeleteAsync(id);
+        }
+        catch (NpgsqlException ex)
+        {
+            throw new ShelterException(ExceptionMessages.DatabaseError, ErrorTypeEnum.DatabaseError, ex);
+        }
+    }
+
+    public async Task<bool> UpdateVaccinationAsync(Vaccination vaccination)
+    {
+        VaccinationValidator.Validate(vaccination);
+
+        try
+        {
+            return await _vaccinationRepository.UpdateAsync(vaccination);
+        }
+        catch (NpgsqlException ex)
+        {
+            throw new ShelterException(ExceptionMessages.DatabaseError, ErrorTypeEnum.DatabaseError, ex);
+        }
+    }
 }

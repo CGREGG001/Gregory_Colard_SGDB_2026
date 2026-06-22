@@ -25,6 +25,12 @@ public class AdoptionService(IAdoptionRepository adoptionRepo, IAnimalRepository
 
     public async Task<IEnumerable<AdoptionFile>> GetAllAdoptionsAsync() => await _adoptionRepo.GetAllAsync();
 
+    public async Task<IEnumerable<AdoptionFile>> GetAnimalAdoptionsAsync(string animalId)
+    => await _adoptionRepo.GetByAnimalIdAsync(animalId);
+
+    public async Task<IEnumerable<AdoptionFile>> GetContactAdoptionsAsync(Guid contactId)
+        => await _adoptionRepo.GetByContactIdAsync(contactId);
+
     public async Task<bool> ProcessAdoptionAsync(Guid id, AdoptionStatusEnum newStatus)
     {
         var file = await _adoptionRepo.GetByIdAsync(id) ?? throw new ShelterException("Adoption file not found", ErrorTypeEnum.NotFound);

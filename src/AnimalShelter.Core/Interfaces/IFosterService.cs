@@ -8,4 +8,5 @@ public interface IFosterService
     Task<bool> EndFosterStayAsync(Guid stayId, DateTime endDate);
     Task<IEnumerable<FosterStay>> GetAnimalHistoryAsync(string animalId);
     Task<IEnumerable<FosterStay>> GetFamilyCurrentAnimalsAsync(Guid contactId);
+    Task<IEnumerable<FosterStay>> GetFamilyFosterHistoryAsync(Guid contactId);
 }

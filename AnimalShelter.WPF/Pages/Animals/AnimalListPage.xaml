@@ -1,0 +1,144 @@
+﻿<Page x:Class="AnimalShelter.WPF.Pages.Animals.AnimalListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ContentBg}">
+
+    <Grid Margin="32,28,32,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- En-tête -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Animaux" Style="{StaticResource PageTitleStyle}" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="+ Ajouter un animal"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding AddCommand}"/>
+        </Grid>
+
+        <!-- Filtres -->
+        <Border Grid.Row="1" Background="{StaticResource CardBg}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                CornerRadius="8" Padding="16" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <TextBlock Text="Nom" Style="{StaticResource FormLabelStyle}"/>
+                    <TextBox Style="{StaticResource InputStyle}"
+                             Text="{Binding FilterName, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <TextBlock Text="Espèce" Style="{StaticResource FormLabelStyle}"/>
+                    <ComboBox Style="{StaticResource ComboStyle}"
+                              ItemsSource="{Binding SpeciesOptions}"
+                              SelectedItem="{Binding FilterSpecies}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                    <TextBlock Text="Statut" Style="{StaticResource FormLabelStyle}"/>
+                    <ComboBox Style="{StaticResource ComboStyle}"
+                              ItemsSource="{Binding StatusOptions}"
+                              SelectedItem="{Binding FilterStatus}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Margin="0,0,12,0">
+                    <TextBlock Text="Sexe" Style="{StaticResource FormLabelStyle}"/>
+                    <ComboBox Style="{StaticResource ComboStyle}"
+                              ItemsSource="{Binding SexOptions}"
+                              SelectedItem="{Binding FilterSex}"/>
+                </StackPanel>
+
+                <Button Grid.Column="4" Content="Réinitialiser"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding ResetFiltersCommand}"
+                        VerticalAlignment="Bottom"/>
+            </Grid>
+        </Border>
+
+        <!-- Chargement -->
+        <TextBlock Grid.Row="2" Text="Chargement..."
+                   Visibility="{Binding LoadingVisibility}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Foreground="{StaticResource TextSecondary}" FontSize="14"/>
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Animals}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  RowHeight="40"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  BorderThickness="1"
+                  Background="{StaticResource CardBg}"
+                  RowBackground="White"
+                  AlternatingRowBackground="#F8FAFC"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanUserResizeRows="False">
+
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#F1F5F9"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="Padding" Value="12,8"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="12,0"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#EFF6FF"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Espèce" Binding="{Binding Species}" Width="100"/>
+                <DataGridTextColumn Header="Sexe" Binding="{Binding Sex}" Width="80"/>
+                <DataGridTextColumn Header="Couleurs" Binding="{Binding Colors}" Width="120"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding CurrentStatus}" Width="100"/>
+                <DataGridTextColumn Header="Naissance" Binding="{Binding BirthDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                <DataGridTemplateColumn Header="Actions" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Détails"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Padding="10,4"
+                                    FontSize="12"
+                                    Command="{Binding DataContext.ShowDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

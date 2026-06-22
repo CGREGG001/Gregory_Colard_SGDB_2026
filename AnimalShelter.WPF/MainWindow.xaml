@@ -1,12 +1,42 @@
 ﻿<Window x:Class="AnimalShelter.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:AnimalShelter.WPF"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Animal Shelter" Height="700" Width="1100"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen">
 
-    </Grid>
+    <DockPanel>
+
+        <!-- Barre de navigation horizontale -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource SidebarBg}"
+                BorderBrush="#2D3F55" BorderThickness="0,0,0,1">
+            <DockPanel Height="56">
+
+                <!-- Logo -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                            VerticalAlignment="Center" Margin="20,0,32,0">
+                    <TextBlock Text="AS" FontSize="22" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Animal Shelter"
+                               Foreground="{StaticResource TextOnDark}"
+                               FontSize="15" FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
+                    <Button x:Name="NavAnimals" Content="Animaux"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="NavAnimals_Click"/>
+
+                </StackPanel>
+
+            </DockPanel>
+        </Border>
+
+        <!-- Content Frame -->
+        <Frame x:Name="MainFrame"
+               Background="{StaticResource ContentBg}"
+               NavigationUIVisibility="Hidden"/>
+
+    </DockPanel>
 </Window>

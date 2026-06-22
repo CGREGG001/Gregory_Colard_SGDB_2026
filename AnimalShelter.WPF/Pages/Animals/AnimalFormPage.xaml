@@ -1,0 +1,142 @@
+﻿<Page x:Class="AnimalShelter.WPF.Pages.Animals.AnimalFormPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ContentBg}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="32,28,32,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- En-tête -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="← Retour"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding CancelCommand}" Margin="0,0,16,0"/>
+                <TextBlock Grid.Column="1" Text="{Binding Title}"
+                           Style="{StaticResource PageTitleStyle}" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Message d'erreur -->
+            <Border Grid.Row="1" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+                    CornerRadius="6" Padding="12,8" Margin="0,0,0,16"
+                    Visibility="{Binding ErrorVisibility}">
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" FontSize="13"/>
+            </Border>
+
+            <!-- Formulaire -->
+            <Border Grid.Row="2" Background="{StaticResource CardBg}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="28">
+                <StackPanel>
+
+                    <!-- Ligne 1 : Nom + Espèce + Sexe -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="140"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Nom *" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Style="{StaticResource InputStyle}"
+                                     Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                            <TextBlock Text="Espèce *" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox Style="{StaticResource ComboStyle}"
+                                      ItemsSource="{Binding SpeciesOptions}"
+                                      SelectedItem="{Binding Species}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Sexe *" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox Style="{StaticResource ComboStyle}"
+                                      ItemsSource="{Binding SexOptions}"
+                                      SelectedItem="{Binding Sex}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Ligne 2 : Couleurs + Statut + Naissance -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Couleurs" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Style="{StaticResource InputStyle}"
+                                     Text="{Binding Colors, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                            <TextBlock Text="Statut *" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox Style="{StaticResource ComboStyle}"
+                                      ItemsSource="{Binding StatusOptions}"
+                                      SelectedItem="{Binding CurrentStatus}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Date de naissance" Style="{StaticResource FormLabelStyle}"/>
+                            <DatePicker SelectedDate="{Binding BirthDate}"
+                                        BorderBrush="{StaticResource BorderBrush}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Ligne 3 : Stérilisation -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" Content="Stérilisé(e)"
+                                  IsChecked="{Binding IsSterilised}"
+                                  Margin="0,0,24,0" VerticalAlignment="Center"
+                                  Foreground="{StaticResource TextPrimary}"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Date de stérilisation" Style="{StaticResource FormLabelStyle}"/>
+                            <DatePicker SelectedDate="{Binding SterilisationDate}"
+                                        BorderBrush="{StaticResource BorderBrush}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Description -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Description" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Style="{StaticResource InputStyle}"
+                                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True" Height="80" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+
+                    <!-- Particularités -->
+                    <StackPanel Margin="0,0,0,24">
+                        <TextBlock Text="Particularités" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Style="{StaticResource InputStyle}"
+                                 Text="{Binding Particularities, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True" Height="80" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+
+                    <!-- Boutons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Annuler"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding CancelCommand}"
+                                Margin="0,0,12,0"/>
+                        <Button Content="Enregistrer"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding SaveCommand}"
+                                IsEnabled="{Binding IsSaveEnabled}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,557 @@
+﻿<Page x:Class="AnimalShelter.WPF.Pages.Animals.AnimalDetailsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ContentBg}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="32,28,32,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- En-tête -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="← Retour"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="Back_Click" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Animal.Name, FallbackValue='Détail animal'}"
+                           Style="{StaticResource PageTitleStyle}"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Content="Modifier"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding EditCommand}"
+                            Margin="0,0,8,0"/>
+                    <Button Content="Supprimer"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Command="{Binding DeleteCommand}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Chargement -->
+            <TextBlock Grid.Row="1" Text="Chargement..."
+                       Visibility="{Binding LoadingVisibility}"
+                       HorizontalAlignment="Center" Margin="0,40,0,0"
+                       Foreground="{StaticResource TextSecondary}" FontSize="14"/>
+
+            <!-- Contenu -->
+            <StackPanel Grid.Row="1">
+
+                <!-- Fiche principale -->
+                <Border Background="{StaticResource CardBg}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="24" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,24,16">
+                            <TextBlock Text="Espèce" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.Species}" Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,24,16">
+                            <TextBlock Text="Sexe" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.Sex}" Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Statut" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.CurrentStatus}" Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,24,16">
+                            <TextBlock Text="Couleurs" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.Colors, FallbackValue='—'}" Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,0,24,16">
+                            <TextBlock Text="Date de naissance" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.BirthDate, StringFormat=dd/MM/yyyy, FallbackValue='—'}"
+                                       Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,0,0,16">
+                            <TextBlock Text="Stérilisé(e)" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.IsSterilised}" Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3">
+                            <TextBlock Text="Description" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Animal.Description, FallbackValue='—'}"
+                                       Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Tabs -->
+                <TabControl BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource CardBg}">
+
+                    <!-- Vaccinations -->
+                    <TabItem Header="Vaccinations">
+                        <StackPanel>
+
+                            <!-- Formulaire ajout / édition -->
+                            <Border BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="0,0,0,1" Padding="16,12">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVaccinationEditMode}" Value="True">
+                                                <Setter Property="Background" Value="#EFF6FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <!-- Titre du formulaire -->
+                                    <TextBlock Text="{Binding VaccinationFormTitle}"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="0,0,0,8"/>
+
+                                    <!-- Message d'erreur -->
+                                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+                                            CornerRadius="4" Padding="10,6" Margin="0,0,0,10"
+                                            Visibility="{Binding VaccinationErrorVisibility}">
+                                        <TextBlock Text="{Binding VaccinationErrorMessage}"
+                                                   Foreground="#DC2626" FontSize="12"/>
+                                    </Border>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Nom du vaccin *" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBox Style="{StaticResource InputStyle}"
+                                                     Text="{Binding NewVaccineName, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="Date *" Style="{StaticResource FormLabelStyle}"/>
+                                            <DatePicker SelectedDate="{Binding NewVaccineDate}"
+                                                        BorderBrush="{StaticResource BorderBrush}"/>
+                                        </StackPanel>
+
+                                        <CheckBox Grid.Column="2" Content="Fait"
+                                                  IsChecked="{Binding NewVaccineIsDone}"
+                                                  VerticalAlignment="Bottom" Margin="0,0,12,8"
+                                                  Foreground="{StaticResource TextPrimary}"/>
+
+                                        <Button Grid.Column="3"
+                                                Content="{Binding VaccinationSaveLabel}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding SaveVaccinationCommand}"
+                                                Margin="0,0,8,0"/>
+
+                                        <Button Grid.Column="4" Content="Annuler"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding CancelVaccinationEditCommand}"
+                                                Visibility="{Binding VaccinationCancelVisibility}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Liste des vaccinations -->
+                            <DataGrid ItemsSource="{Binding Vaccinations}"
+                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal" RowHeight="36"
+                                      Background="White" BorderThickness="0"
+                                      CanUserResizeRows="False" MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Vaccin" Binding="{Binding VaccineName}" Width="*"/>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding VaccineDate, StringFormat=dd/MM/yyyy}" Width="140"/>
+                                    <DataGridTextColumn Header="Fait" Binding="{Binding IsDone}" Width="80"/>
+                                    <DataGridTemplateColumn Header="" Width="160">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Éditer"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="8,3" FontSize="12"
+                                                            Margin="0,0,6,0"
+                                                            Command="{Binding DataContext.EditVaccinationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <Button Content="Supprimer"
+                                                            Style="{StaticResource DangerButtonStyle}"
+                                                            Padding="8,3" FontSize="12"
+                                                            Command="{Binding DataContext.DeleteVaccinationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Compatibilités -->
+                    <TabItem Header="Compatibilités">
+                        <StackPanel>
+
+                            <!-- Formulaire ajout / édition -->
+                            <Border BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="0,0,0,1" Padding="16,12">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCompatEditMode}" Value="True">
+                                                <Setter Property="Background" Value="#EFF6FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding CompatFormTitle}"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="0,0,0,8"/>
+
+                                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+                                            CornerRadius="4" Padding="10,6" Margin="0,0,0,10"
+                                            Visibility="{Binding CompatErrorVisibility}">
+                                        <TextBlock Text="{Binding CompatErrorMessage}"
+                                                   Foreground="#DC2626" FontSize="12"/>
+                                    </Border>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Type *" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Style="{StaticResource ComboStyle}"
+                                                      ItemsSource="{Binding CompatTypeOptions}"
+                                                      SelectedItem="{Binding NewCompatType}"
+                                                      IsEnabled="{Binding CompatTypeEnabled}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="Valeur *" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Style="{StaticResource ComboStyle}"
+                                                      ItemsSource="{Binding CompatValueOptions}"
+                                                      SelectedItem="{Binding NewCompatValue}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                            <TextBlock Text="Description" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBox Style="{StaticResource InputStyle}"
+                                                     Text="{Binding NewCompatDescription, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="3"
+                                                Content="{Binding CompatSaveLabel}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding SaveCompatibilityCommand}"
+                                                Margin="0,0,8,0"/>
+
+                                        <Button Grid.Column="4" Content="Annuler"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding CancelCompatibilityEditCommand}"
+                                                Visibility="{Binding CompatCancelVisibility}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Liste des compatibilités -->
+                            <DataGrid ItemsSource="{Binding Compatibilities}"
+                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal" RowHeight="36"
+                                      Background="White" BorderThickness="0"
+                                      CanUserResizeRows="False" MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding TargetType}" Width="140"/>
+                                    <DataGridTextColumn Header="Valeur" Binding="{Binding ValueEnum}" Width="120"/>
+                                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                                    <DataGridTemplateColumn Header="" Width="160">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="Éditer"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="8,3" FontSize="12" Margin="0,0,6,0"
+                                                            Command="{Binding DataContext.EditCompatibilityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <Button Content="Supprimer"
+                                                            Style="{StaticResource DangerButtonStyle}"
+                                                            Padding="8,3" FontSize="12"
+                                                            Command="{Binding DataContext.DeleteCompatibilityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Famille d'accueil -->
+                    <TabItem Header="Famille d'accueil">
+                        <StackPanel>
+
+                            <!-- Formulaire démarrer / terminer -->
+                            <Border BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="0,0,0,1" Padding="16,12">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFosterEndMode}" Value="True">
+                                                <Setter Property="Background" Value="#FFF7ED"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FosterFormTitle}"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="0,0,0,8"/>
+
+                                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+                                            CornerRadius="4" Padding="10,6" Margin="0,0,0,10"
+                                            Visibility="{Binding FosterErrorVisibility}">
+                                        <TextBlock Text="{Binding FosterErrorMessage}"
+                                                   Foreground="#DC2626" FontSize="12"/>
+                                    </Border>
+
+                                    <!-- Mode démarrer un accueil -->
+                                    <Grid Visibility="{Binding FosterStartFormVisibility}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Famille d'accueil *" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Style="{StaticResource ComboStyle}"
+                                                      ItemsSource="{Binding FosterContactOptions}"
+                                                      SelectedItem="{Binding SelectedFosterContact}"
+                                                      DisplayMemberPath="FullName"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="Date de début *" Style="{StaticResource FormLabelStyle}"/>
+                                            <DatePicker SelectedDate="{Binding NewFosterStartDate}"
+                                                        BorderBrush="{StaticResource BorderBrush}"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="Démarrer"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding StartFosterCommand}"/>
+                                    </Grid>
+
+                                    <!-- Mode terminer un accueil -->
+                                    <Grid Visibility="{Binding FosterEndFormVisibility}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Date de fin *" Style="{StaticResource FormLabelStyle}"/>
+                                            <DatePicker SelectedDate="{Binding FosterEndDate}"
+                                                        BorderBrush="{StaticResource BorderBrush}"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Confirmer la fin"
+                                                Style="{StaticResource DangerButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding ConfirmFosterEndCommand}"
+                                                Margin="0,0,8,0"/>
+                                        <Button Grid.Column="2" Content="Annuler"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding CancelFosterEndCommand}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Liste des accueils -->
+                            <DataGrid ItemsSource="{Binding FosterHistory}"
+                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal" RowHeight="36"
+                                      Background="White" BorderThickness="0"
+                                      CanUserResizeRows="False" MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Contact" Binding="{Binding ContactName}" Width="*"/>
+                                    <DataGridTextColumn Header="Début" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="120"/>
+                                    <DataGridTextColumn Header="Fin" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy, FallbackValue='En cours'}" Width="120"/>
+                                    <DataGridTemplateColumn Header="" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Terminer"
+                                                        Command="{Binding DataContext.EndFosterCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="8,3" FontSize="12">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding EndDate}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Adoptions -->
+                    <TabItem Header="Adoptions">
+                        <StackPanel>
+
+                            <!-- Formulaire demande / traitement -->
+                            <Border BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="0,0,0,1" Padding="16,12">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAdoptionProcessMode}" Value="True">
+                                                <Setter Property="Background" Value="#EFF6FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding AdoptionFormTitle}"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="0,0,0,8"/>
+
+                                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"
+                                            CornerRadius="4" Padding="10,6" Margin="0,0,0,10"
+                                            Visibility="{Binding AdoptionErrorVisibility}">
+                                        <TextBlock Text="{Binding AdoptionErrorMessage}"
+                                                   Foreground="#DC2626" FontSize="12"/>
+                                    </Border>
+
+                                    <!-- Mode demande -->
+                                    <Grid Visibility="{Binding AdoptionRequestFormVisibility}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Candidat à l'adoption *" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Style="{StaticResource ComboStyle}"
+                                                      ItemsSource="{Binding FosterContactOptions}"
+                                                      SelectedItem="{Binding SelectedAdoptionContact}"
+                                                      DisplayMemberPath="FullName"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Demander"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding RequestAdoptionCommand}"/>
+                                    </Grid>
+
+                                    <!-- Mode traitement -->
+                                    <Grid Visibility="{Binding AdoptionProcessFormVisibility}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Décision *" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Style="{StaticResource ComboStyle}"
+                                                      ItemsSource="{Binding AdoptionProcessStatusOptions}"
+                                                      SelectedItem="{Binding SelectedAdoptionStatus}"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Confirmer"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding ConfirmAdoptionProcessCommand}"
+                                                Margin="0,0,8,0"/>
+                                        <Button Grid.Column="2" Content="Annuler"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding CancelAdoptionProcessCommand}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Liste des dossiers -->
+                            <DataGrid ItemsSource="{Binding Adoptions}"
+                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      GridLinesVisibility="Horizontal" RowHeight="36"
+                                      Background="White" BorderThickness="0"
+                                      CanUserResizeRows="False" MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Candidat" Binding="{Binding ContactName}" Width="*"/>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding RequestDate, StringFormat=dd/MM/yyyy}" Width="110"/>
+                                    <DataGridTextColumn Header="Statut" Binding="{Binding Status}" Width="140"/>
+                                    <DataGridTemplateColumn Header="" Width="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Traiter"
+                                                        Command="{Binding DataContext.ProcessAdoptionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="8,3" FontSize="12">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Requested">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </StackPanel>
+                    </TabItem>
+
+                </TabControl>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

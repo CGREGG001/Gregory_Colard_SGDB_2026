@@ -27,7 +27,9 @@
                     <Button x:Name="NavAnimals" Content="Animaux"
                             Style="{StaticResource NavButtonStyle}"
                             Click="NavAnimals_Click"/>
-
+                    <Button x:Name="NavContacts" Content="Contacts"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="NavContacts_Click"/>
                 </StackPanel>
 
             </DockPanel>

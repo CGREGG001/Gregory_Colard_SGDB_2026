@@ -344,6 +344,11 @@ CREATE OR REPLACE FUNCTION sp_contact_update_full(
 DECLARE
     v_rows INTEGER;
 BEGIN
+    IF p_id_address IS NULL THEN
+        SELECT id_address INTO p_id_address
+        FROM contacts
+        WHERE id_person = p_contact_id;
+    END IF;
     IF p_id_address IS NOT NULL THEN
         UPDATE addresses SET
             street    = p_street,
